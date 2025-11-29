@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///G:/apps/Dev/avatars_new/front/app/%28main%29/page.tsx"],"sourcesContent":["\"use client\";\n\nimport { useEffect } from \"react\";\nimport { useRouter } from \"next/navigation\";\n\nexport const dynamic = 'force-dynamic';\n\nexport default function Home() {\n  const router = useRouter();\n\n  useEffect(() => {\n    router.push(\"/avatars\");\n  }, [router]);\n\n  return null;\n}\n"],"names":[],"mappings":";;;;;;AAEA;AACA;;AAHA;;;AAKO,MAAM,UAAU;AAER,SAAS;;IACtB,MAAM,SAAS,IAAA,kJAAS;IAExB,IAAA,0KAAS;0BAAC;YACR,OAAO,IAAI,CAAC;QACd;yBAAG;QAAC;KAAO;IAEX,OAAO;AACT;GARwB;;QACP,kJAAS;;;KADF"}},
+    {"offset": {"line": 43, "column": 0}, "map": {"version":3,"sources":["file:///G:/apps/Dev/avatars_new/front/node_modules/next/navigation.js"],"sourcesContent":["module.exports = require('./dist/client/components/navigation')\n"],"names":[],"mappings":"AAAA,OAAO,OAAO","ignoreList":[0]}}]
+}

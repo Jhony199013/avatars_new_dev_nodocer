@@ -1,0 +1,50 @@
+{
+  "node": {
+    "40cd6299375834d156b90e590d5d7df8fc8ed2c79b": {
+      "workers": {
+        "app/avatars/page": {
+          "moduleId": "[project]/.next-internal/server/app/avatars/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/avatars/servers/DeletePhotoAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/avatars/servers/UpdateAvatarName.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "UploadAvatar",
+          "filename": "app/avatars/servers/UploadAvatar.ts"
+        }
+      },
+      "layer": {
+        "app/avatars/page": "action-browser"
+      },
+      "exportedName": "UploadAvatar",
+      "filename": "app/avatars/servers/UploadAvatar.ts"
+    },
+    "404ef6fa38aced2d34bba744ff0fb1ae23c6121202": {
+      "workers": {
+        "app/avatars/page": {
+          "moduleId": "[project]/.next-internal/server/app/avatars/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/avatars/servers/DeletePhotoAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/avatars/servers/UpdateAvatarName.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "DeletePhotoAvatar",
+          "filename": "app/avatars/servers/DeletePhotoAvatar.ts"
+        }
+      },
+      "layer": {
+        "app/avatars/page": "action-browser"
+      },
+      "exportedName": "DeletePhotoAvatar",
+      "filename": "app/avatars/servers/DeletePhotoAvatar.ts"
+    },
+    "406d5b6e083f7879367c2bfcb42f10d02bcd7af836": {
+      "workers": {
+        "app/avatars/page": {
+          "moduleId": "[project]/.next-internal/server/app/avatars/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/avatars/servers/DeletePhotoAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/avatars/servers/UpdateAvatarName.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "UpdateAvatarName",
+          "filename": "app/avatars/servers/UpdateAvatarName.ts"
+        }
+      },
+      "layer": {
+        "app/avatars/page": "action-browser"
+      },
+      "exportedName": "UpdateAvatarName",
+      "filename": "app/avatars/servers/UpdateAvatarName.ts"
+    }
+  },
+  "edge": {}
+}

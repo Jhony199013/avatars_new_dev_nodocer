@@ -1,0 +1,35 @@
+{
+  "node": {
+    "40283b640ad833f930e378e3009dbbd29e474a640a": {
+      "workers": {
+        "app/voices/page": {
+          "moduleId": "[project]/.next-internal/server/app/voices/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/voices/servers/DeleteVoice.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/voices/servers/UpdateVoice.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "DeleteVoice",
+          "filename": "app/voices/servers/DeleteVoice.ts"
+        }
+      },
+      "layer": {
+        "app/voices/page": "action-browser"
+      },
+      "exportedName": "DeleteVoice",
+      "filename": "app/voices/servers/DeleteVoice.ts"
+    },
+    "40db8994e698b2000fa8f50a7e0d97e8cf222ef9c0": {
+      "workers": {
+        "app/voices/page": {
+          "moduleId": "[project]/.next-internal/server/app/voices/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/voices/servers/DeleteVoice.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/voices/servers/UpdateVoice.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "UpdateVoice",
+          "filename": "app/voices/servers/UpdateVoice.ts"
+        }
+      },
+      "layer": {
+        "app/voices/page": "action-browser"
+      },
+      "exportedName": "UpdateVoice",
+      "filename": "app/voices/servers/UpdateVoice.ts"
+    }
+  },
+  "edge": {}
+}

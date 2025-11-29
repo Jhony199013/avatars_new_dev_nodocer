@@ -1,0 +1,80 @@
+{
+  "node": {
+    "7000fcee5146d4789fe71fa53d076de4174ef095fa": {
+      "workers": {
+        "app/material/editor/page": {
+          "moduleId": "[project]/.next-internal/server/app/material/editor/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/material/editor/servers/CreateVideoRecord.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/material/editor/servers/UploadMedia.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/material/editor/servers/DeleteMedia.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "CreateVideoTemp",
+          "filename": "app/material/editor/servers/CreateVideoRecord.ts"
+        }
+      },
+      "layer": {
+        "app/material/editor/page": "action-browser"
+      },
+      "exportedName": "CreateVideoTemp",
+      "filename": "app/material/editor/servers/CreateVideoRecord.ts"
+    },
+    "6041d527326f7ab0a643947c08d1842e95f1eb3418": {
+      "workers": {
+        "app/material/editor/page": {
+          "moduleId": "[project]/.next-internal/server/app/material/editor/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/material/editor/servers/CreateVideoRecord.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/material/editor/servers/UploadMedia.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/material/editor/servers/DeleteMedia.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "CreateVideo",
+          "filename": "app/material/editor/servers/CreateVideoRecord.ts"
+        }
+      },
+      "layer": {
+        "app/material/editor/page": "action-browser"
+      },
+      "exportedName": "CreateVideo",
+      "filename": "app/material/editor/servers/CreateVideoRecord.ts"
+    },
+    "602db17b8b62fd2f5cdbd62aab29f687da86ca1407": {
+      "workers": {
+        "app/material/editor/page": {
+          "moduleId": "[project]/.next-internal/server/app/material/editor/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/material/editor/servers/CreateVideoRecord.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/material/editor/servers/UploadMedia.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/material/editor/servers/DeleteMedia.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "UploadMedia",
+          "filename": "app/material/editor/servers/UploadMedia.ts"
+        }
+      },
+      "layer": {
+        "app/material/editor/page": "action-browser"
+      },
+      "exportedName": "UploadMedia",
+      "filename": "app/material/editor/servers/UploadMedia.ts"
+    },
+    "4045b389415ee901b0b95b51685a59e4ee7c6f2de4": {
+      "workers": {
+        "app/material/editor/page": {
+          "moduleId": "[project]/.next-internal/server/app/material/editor/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/material/editor/servers/CreateVideoRecord.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/material/editor/servers/UploadMedia.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/material/editor/servers/DeleteMedia.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "DeleteMedia",
+          "filename": "app/material/editor/servers/DeleteMedia.ts"
+        }
+      },
+      "layer": {
+        "app/material/editor/page": "action-browser"
+      },
+      "exportedName": "DeleteMedia",
+      "filename": "app/material/editor/servers/DeleteMedia.ts"
+    },
+    "40cd6299375834d156b90e590d5d7df8fc8ed2c79b": {
+      "workers": {
+        "app/material/editor/page": {
+          "moduleId": "[project]/.next-internal/server/app/material/editor/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/material/editor/servers/CreateVideoRecord.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/material/editor/servers/UploadMedia.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/material/editor/servers/DeleteMedia.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "UploadAvatar",
+          "filename": "app/avatars/servers/UploadAvatar.ts"
+        }
+      },
+      "layer": {
+        "app/material/editor/page": "action-browser"
+      },
+      "exportedName": "UploadAvatar",
+      "filename": "app/avatars/servers/UploadAvatar.ts"
+    }
+  },
+  "edge": {}
+}

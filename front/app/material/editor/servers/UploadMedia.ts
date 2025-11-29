@@ -96,6 +96,9 @@ export async function UploadMedia(
     await s3Client.send(command);
 
     // Формируем публичный URL файла
+    if (!s3Endpoint) {
+      throw new Error("S3_ENDPOINT не задан");
+    }
     const baseUrl = s3Endpoint.replace(/\/$/, "");
     const url = `${baseUrl}/${s3Bucket}/${s3Key}`;
 
@@ -111,6 +114,7 @@ export async function UploadMedia(
     return { success: false, error: message };
   }
 }
+
 
 
 

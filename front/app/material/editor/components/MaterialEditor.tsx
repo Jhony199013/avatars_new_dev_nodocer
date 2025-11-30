@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
+import { generateUUID } from "@/lib/uuid";
 
 import { EditorSidebar } from "./EditorSidebar";
 import { Timeline } from "./Timeline";
@@ -21,7 +22,7 @@ import type {
 } from "./types";
 
 const createScene = (index: number): Scene => ({
-  id: crypto.randomUUID(),
+  id: generateUUID(),
   title: `Слайд ${index}`,
   script: "",
   avatarId: null,
@@ -324,7 +325,7 @@ export function MaterialEditor() {
       return;
     }
     
-    const newSceneId = crypto.randomUUID();
+    const newSceneId = generateUUID();
     setScenes((prev) => {
       const newIndex = afterSceneId
         ? prev.findIndex((s) => s.id === afterSceneId) + 1
@@ -912,7 +913,7 @@ export function MaterialEditor() {
       }
 
       // Генерируем уникальный UUID для видео
-      const videoUuid = crypto.randomUUID();
+      const videoUuid = generateUUID();
       // Добавляем UUID к названию видео через подчеркивание
       const videoTitleWithUuid = `${videoTitle}_${videoUuid}`;
 

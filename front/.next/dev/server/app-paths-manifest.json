@@ -1,6 +1,8 @@
 {
   "/(main)/page": "app/(main)/page.js",
+  "/api/tts-audio/route": "app/api/tts-audio/route.js",
   "/avatars/page": "app/avatars/page.js",
+  "/login/page": "app/login/page.js",
   "/material/editor/page": "app/material/editor/page.js",
   "/material/page": "app/material/page.js",
   "/voices/page": "app/voices/page.js"

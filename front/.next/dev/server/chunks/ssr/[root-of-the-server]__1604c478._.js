@@ -488,15 +488,73 @@ function VoiceCreateModal({ isOpen, onClose, onVoiceCreated }) {
     const [isWaiting, setIsWaiting] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [progress, setProgress] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(0);
     const [dragActive, setDragActive] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [audioLevel, setAudioLevel] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(0); // Уровень громкости (0-100)
+    const [isTestingMicrophone, setIsTestingMicrophone] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false); // Тест микрофона до записи
+    const [recordingTimer, setRecordingTimer] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(120); // Таймер записи в секундах (2 минуты)
+    const [errorModal, setErrorModal] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])({
+        isOpen: false,
+        message: ""
+    });
     const progressIntervalRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const timerIntervalRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
     const mediaRecorderRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
     const audioChunksRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])([]);
     const fileInputRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
     const audioPlayerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const audioContextRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const analyserRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const animationFrameRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const streamRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
     const stopProgressLoop = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(()=>{
         if (progressIntervalRef.current) {
             clearInterval(progressIntervalRef.current);
             progressIntervalRef.current = null;
+        }
+    }, []);
+    const stopTimer = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(()=>{
+        if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+        }
+    }, []);
+    const stopAudioAnalysis = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(()=>{
+        if (animationFrameRef.current !== null) {
+            cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = null;
+        }
+        if (audioContextRef.current && audioContextRef.current.state !== "closed") {
+            audioContextRef.current.close().catch(console.error);
+        }
+        setAudioLevel(0);
+    }, []);
+    const startAudioAnalysis = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])((stream)=>{
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const analyser = audioContext.createAnalyser();
+            const microphone = audioContext.createMediaStreamSource(stream);
+            analyser.fftSize = 256;
+            analyser.smoothingTimeConstant = 0.8;
+            microphone.connect(analyser);
+            audioContextRef.current = audioContext;
+            analyserRef.current = analyser;
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            const updateAudioLevel = ()=>{
+                if (!analyserRef.current) return;
+                analyserRef.current.getByteFrequencyData(dataArray);
+                // Вычисляем средний уровень громкости
+                let sum = 0;
+                for(let i = 0; i < dataArray.length; i++){
+                    sum += dataArray[i];
+                }
+                const average = sum / dataArray.length;
+                // Преобразуем в проценты (0-100)
+                const level = Math.min(100, average / 255 * 100);
+                setAudioLevel(level);
+                animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
+            };
+            updateAudioLevel();
+        } catch (error) {
+            console.error("Ошибка анализа аудио:", error);
         }
     }, []);
     const startProgressLoop = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(()=>{
@@ -523,18 +581,28 @@ function VoiceCreateModal({ isOpen, onClose, onVoiceCreated }) {
         setRecordedAudioUrl(null);
         setIsRecording(false);
         setIsWaiting(false);
+        setIsTestingMicrophone(false);
         setProgress(0);
+        setRecordingTimer(120);
         stopProgressLoop();
+        stopTimer();
+        stopAudioAnalysis();
         audioChunksRef.current = [];
         if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
             mediaRecorderRef.current.stop();
+        }
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach((track)=>track.stop());
+            streamRef.current = null;
         }
         if (mediaRecorderRef.current?.stream) {
             mediaRecorderRef.current.stream.getTracks().forEach((track)=>track.stop());
         }
     }, [
         recordedAudioUrl,
-        stopProgressLoop
+        stopProgressLoop,
+        stopTimer,
+        stopAudioAnalysis
     ]);
     const closeModal = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(()=>{
         resetState();
@@ -545,6 +613,9 @@ function VoiceCreateModal({ isOpen, onClose, onVoiceCreated }) {
     ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         return ()=>{
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach((track)=>track.stop());
+            }
             if (mediaRecorderRef.current?.stream) {
                 mediaRecorderRef.current.stream.getTracks().forEach((track)=>track.stop());
             }
@@ -553,18 +624,28 @@ function VoiceCreateModal({ isOpen, onClose, onVoiceCreated }) {
                 URL.revokeObjectURL(recordedAudioUrl);
             }
             stopProgressLoop();
+            stopTimer();
+            stopAudioAnalysis();
         };
     }, [
         recordedAudioUrl,
-        stopProgressLoop
+        stopProgressLoop,
+        stopTimer,
+        stopAudioAnalysis
     ]);
+    const showError = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])((message)=>{
+        setErrorModal({
+            isOpen: true,
+            message
+        });
+    }, []);
     const validateFile = (file)=>{
         if (!ALLOWED_TYPES.includes(file.type.toLowerCase())) {
-            alert("Неподдерживаемый формат файла. Допустимы только MP3, WAV, WebM или OGG.");
+            showError("Неподдерживаемый формат файла. Допустимы только MP3, WAV, WebM или OGG.");
             return false;
         }
         if (file.size > MAX_FILE_SIZE) {
-            alert(`Файл превышает лимит ${MAX_FILE_SIZE_MB} МБ. Размер файла: ${(file.size / 1024 / 1024).toFixed(1)} МБ`);
+            showError(`Файл превышает лимит ${MAX_FILE_SIZE_MB} МБ. Размер файла: ${(file.size / 1024 / 1024).toFixed(1)} МБ`);
             return false;
         }
         return true;
@@ -599,25 +680,12 @@ function VoiceCreateModal({ isOpen, onClose, onVoiceCreated }) {
             }
         }
     }, []);
-    const startRecording = async ()=>{
+    const startMicrophoneTest = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(async ()=>{
         try {
             // Проверяем доступность API
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert("Ваш браузер не поддерживает запись с микрофона. Пожалуйста, используйте современный браузер (Chrome, Firefox, Edge).");
+                showError("Ваш браузер не поддерживает запись с микрофона. Пожалуйста, используйте современный браузер (Chrome, Firefox, Edge).");
                 return;
-            }
-            // Проверяем разрешения перед запросом
-            try {
-                const permissionStatus = await navigator.permissions.query({
-                    name: "microphone"
-                });
-                if (permissionStatus.state === "denied") {
-                    alert("Доступ к микрофону запрещен. Пожалуйста, разрешите доступ к микрофону в настройках браузера и обновите страницу.");
-                    return;
-                }
-            } catch (permError) {
-                // Некоторые браузеры не поддерживают permissions API, продолжаем
-                console.log("Permissions API не поддерживается, продолжаем запрос");
             }
             const stream = await navigator.mediaDevices.getUserMedia({
                 audio: {
@@ -626,6 +694,97 @@ function VoiceCreateModal({ isOpen, onClose, onVoiceCreated }) {
                     autoGainControl: true
                 }
             });
+            streamRef.current = stream;
+            setIsTestingMicrophone(true);
+            // Запускаем анализ аудио для индикатора громкости
+            startAudioAnalysis(stream);
+        } catch (error) {
+            console.error("Ошибка доступа к микрофону:", error);
+            setIsTestingMicrophone(false);
+            let errorMessage = "Не удалось получить доступ к микрофону.";
+            if (error instanceof Error) {
+                if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+                    errorMessage = "Доступ к микрофону запрещен.\n\n" + "Пожалуйста:\n" + "1. Нажмите на иконку замка в адресной строке браузера\n" + "2. Разрешите доступ к микрофону\n" + "3. Обновите страницу и попробуйте снова";
+                } else if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
+                    errorMessage = "Микрофон не найден. Убедитесь, что микрофон подключен и включен.";
+                } else if (error.name === "NotReadableError" || error.name === "TrackStartError") {
+                    errorMessage = "Микрофон уже используется другим приложением.\n\n" + "Закройте другие приложения, использующие микрофон, и попробуйте снова.";
+                } else {
+                    errorMessage = `Ошибка: ${error.message}`;
+                }
+            }
+            showError(errorMessage);
+        }
+    }, [
+        startAudioAnalysis,
+        showError
+    ]);
+    const stopMicrophoneTest = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(()=>{
+        setIsTestingMicrophone(false);
+        stopAudioAnalysis();
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach((track)=>track.stop());
+            streamRef.current = null;
+        }
+    }, [
+        stopAudioAnalysis
+    ]);
+    // Автоматически запускаем тест микрофона при открытии модального окна
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        if (isOpen && !isRecording && !isTestingMicrophone && !streamRef.current) {
+            startMicrophoneTest();
+        }
+        return ()=>{
+            // Останавливаем тест при закрытии модального окна (если не идет запись)
+            if (!isOpen && !isRecording && isTestingMicrophone) {
+                stopMicrophoneTest();
+            }
+        };
+    }, [
+        isOpen,
+        isRecording,
+        isTestingMicrophone,
+        startMicrophoneTest,
+        stopMicrophoneTest
+    ]);
+    const startRecording = async ()=>{
+        try {
+            // Проверяем доступность API
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showError("Ваш браузер не поддерживает запись с микрофона. Пожалуйста, используйте современный браузер (Chrome, Firefox, Edge).");
+                return;
+            }
+            // Проверяем разрешения перед запросом
+            try {
+                const permissionStatus = await navigator.permissions.query({
+                    name: "microphone"
+                });
+                if (permissionStatus.state === "denied") {
+                    showError("Доступ к микрофону запрещен. Пожалуйста, разрешите доступ к микрофону в настройках браузера и обновите страницу.");
+                    return;
+                }
+            } catch (permError) {
+                // Некоторые браузеры не поддерживают permissions API, продолжаем
+                console.log("Permissions API не поддерживается, продолжаем запрос");
+            }
+            // Всегда создаем новый поток для записи, чтобы избежать конфликтов
+            // Если был тест микрофона, остановим его поток после создания нового
+            const oldStream = streamRef.current;
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
+            // Останавливаем старый поток из теста, если он был
+            if (oldStream && isTestingMicrophone) {
+                stopAudioAnalysis();
+                oldStream.getTracks().forEach((track)=>track.stop());
+            }
+            streamRef.current = stream;
+            // Запускаем анализ аудио для индикатора громкости
+            startAudioAnalysis(stream);
             const mediaRecorder = new MediaRecorder(stream, {
                 mimeType: MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : MediaRecorder.isTypeSupported("audio/webm;codecs=opus") ? "audio/webm;codecs=opus" : "audio/mp4"
             });
@@ -646,16 +805,33 @@ function VoiceCreateModal({ isOpen, onClose, onVoiceCreated }) {
                 const audioUrl = URL.createObjectURL(audioBlob);
                 setRecordedAudioUrl(audioUrl);
                 setSelectedFile(null); // Сбрасываем файл если записали
+                stopAudioAnalysis();
                 stream.getTracks().forEach((track)=>track.stop());
+                streamRef.current = null;
             };
             mediaRecorder.onerror = (event)=>{
                 console.error("Ошибка записи:", event);
                 setIsRecording(false);
+                stopAudioAnalysis();
                 stream.getTracks().forEach((track)=>track.stop());
-                alert("Произошла ошибка при записи. Попробуйте еще раз.");
+                streamRef.current = null;
+                showError("Произошла ошибка при записи. Попробуйте еще раз.");
             };
             mediaRecorder.start();
             setIsRecording(true);
+            setIsTestingMicrophone(false); // Останавливаем тест, начинаем запись
+            setRecordingTimer(120); // Сбрасываем таймер на 2 минуты
+            // Запускаем таймер обратного отсчета
+            stopTimer();
+            timerIntervalRef.current = setInterval(()=>{
+                setRecordingTimer((prev)=>{
+                    if (prev <= 1) {
+                        stopTimer();
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
         } catch (error) {
             console.error("Ошибка доступа к микрофону:", error);
             setIsRecording(false);
@@ -671,15 +847,34 @@ function VoiceCreateModal({ isOpen, onClose, onVoiceCreated }) {
                     errorMessage = `Ошибка: ${error.message}`;
                 }
             }
-            alert(errorMessage);
+            showError(errorMessage);
         }
     };
-    const stopRecording = ()=>{
+    const stopRecording = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(()=>{
         if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
             mediaRecorderRef.current.stop();
             setIsRecording(false);
+            stopTimer();
+            stopAudioAnalysis();
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach((track)=>track.stop());
+                streamRef.current = null;
+            }
         }
-    };
+    }, [
+        stopTimer,
+        stopAudioAnalysis
+    ]);
+    // Автоматическая остановка записи при достижении 0
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        if (isRecording && recordingTimer === 0) {
+            stopRecording();
+        }
+    }, [
+        isRecording,
+        recordingTimer,
+        stopRecording
+    ]);
     const loadLameJs = ()=>{
         return new Promise((resolve, reject)=>{
             if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
@@ -786,7 +981,7 @@ function VoiceCreateModal({ isOpen, onClose, onVoiceCreated }) {
     };
     const handleCloneVoice = async ()=>{
         if (!voiceName.trim()) {
-            alert("Введите название голоса");
+            showError("Введите название голоса");
             return;
         }
         // Проверка лимита в демо-режиме
@@ -795,7 +990,7 @@ function VoiceCreateModal({ isOpen, onClose, onVoiceCreated }) {
             if (user) {
                 const { data: voicesData } = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["supabase"].from("voices").select("id").eq("uid", user.id);
                 if (voicesData && voicesData.length >= 3) {
-                    alert("В демо-режиме можно создать максимум 3 голоса");
+                    showError("В демо-режиме можно создать максимум 3 голоса");
                     return;
                 }
             }
@@ -819,21 +1014,21 @@ function VoiceCreateModal({ isOpen, onClose, onVoiceCreated }) {
                 stopProgressLoop();
                 setIsUploading(false);
                 setIsWaiting(false);
-                alert("Ошибка при конвертации записи. Попробуйте еще раз.");
+                showError("Ошибка при конвертации записи. Попробуйте еще раз.");
                 return;
             }
         } else {
             stopProgressLoop();
             setIsUploading(false);
             setIsWaiting(false);
-            alert("Загрузите файл или запишите голос с микрофона");
+            showError("Загрузите файл или запишите голос с микрофона");
             return;
         }
         if (audioFile.size > MAX_FILE_SIZE) {
             stopProgressLoop();
             setIsUploading(false);
             setIsWaiting(false);
-            alert(`Файл превышает лимит ${MAX_FILE_SIZE_MB} МБ. Размер файла: ${(audioFile.size / 1024 / 1024).toFixed(1)} МБ`);
+            showError(`Файл превышает лимит ${MAX_FILE_SIZE_MB} МБ. Размер файла: ${(audioFile.size / 1024 / 1024).toFixed(1)} МБ`);
             return;
         }
         try {
@@ -898,7 +1093,7 @@ function VoiceCreateModal({ isOpen, onClose, onVoiceCreated }) {
             // Если не нашли за отведенное время
             stopProgressLoop();
             setIsWaiting(false);
-            alert("Голос отправлен на обработку. Проверьте список голосов через несколько секунд.");
+            showError("Голос отправлен на обработку. Проверьте список голосов через несколько секунд.");
             await onVoiceCreated?.();
             closeModal();
         } catch (error) {
@@ -906,7 +1101,7 @@ function VoiceCreateModal({ isOpen, onClose, onVoiceCreated }) {
             stopProgressLoop();
             setIsUploading(false);
             setIsWaiting(false);
-            alert(`Ошибка при клонировании голоса: ${error instanceof Error ? error.message : "Неизвестная ошибка"}`);
+            showError(`Ошибка при клонировании голоса: ${error instanceof Error ? error.message : "Неизвестная ошибка"}`);
         }
     };
     const dropZoneClasses = `rounded-2xl border border-dashed border-purple-400/50 bg-purple-50/30 p-6 text-center transition-all duration-200 ${dragActive ? "shadow-lg -translate-y-0.5 border-purple-500" : "hover:shadow-md hover:-translate-y-0.5"}`;
@@ -915,587 +1110,769 @@ function VoiceCreateModal({ isOpen, onClose, onVoiceCreated }) {
     }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8",
-        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "w-full max-w-lg rounded-[32px] bg-white shadow-2xl",
-            children: [
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "relative flex items-center justify-center border-b px-6 py-4",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-lg font-semibold text-gray-900",
-                            children: "Создать голос"
-                        }, void 0, false, {
-                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                            lineNumber: 542,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            type: "button",
-                            onClick: closeModal,
-                            className: "absolute right-6 rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600",
-                            disabled: isUploading || isRecording,
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                    className: "sr-only",
-                                    children: "Закрыть"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                    lineNumber: 551,
-                                    columnNumber: 13
-                                }, this),
-                                "✕"
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                            lineNumber: 545,
-                            columnNumber: 11
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                    lineNumber: 541,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "max-h-[70vh] overflow-y-auto px-6 py-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full",
-                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "space-y-6 text-sm text-gray-600",
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "w-full max-w-lg rounded-[32px] bg-white shadow-2xl",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "relative flex items-center justify-center border-b px-6 py-4",
                         children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                                className: "text-lg font-semibold text-gray-900",
+                                children: "Создать голос"
+                            }, void 0, false, {
+                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                lineNumber: 747,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                type: "button",
+                                onClick: closeModal,
+                                className: "absolute right-6 rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600",
+                                disabled: isUploading || isRecording,
                                 children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                        htmlFor: "voice-name",
-                                        className: "mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500",
-                                        children: "Название голоса"
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "sr-only",
+                                        children: "Закрыть"
                                     }, void 0, false, {
                                         fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                        lineNumber: 558,
-                                        columnNumber: 15
+                                        lineNumber: 756,
+                                        columnNumber: 13
                                     }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                        id: "voice-name",
-                                        value: voiceName,
-                                        onChange: (event)=>setVoiceName(event.target.value),
-                                        placeholder: "Придумайте название голоса",
-                                        className: "w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-base text-gray-900 outline-none transition focus:border-gray-400",
-                                        disabled: isUploading || isRecording
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                        lineNumber: 564,
-                                        columnNumber: 15
-                                    }, this)
+                                    "✕"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                lineNumber: 557,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "mb-2 flex items-center justify-between",
+                                lineNumber: 750,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                        lineNumber: 746,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "max-h-[70vh] overflow-y-auto px-6 py-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "space-y-6 text-sm text-gray-600",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                            htmlFor: "voice-name",
+                                            className: "mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500",
+                                            children: "Название голоса"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                            lineNumber: 763,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                            id: "voice-name",
+                                            value: voiceName,
+                                            onChange: (event)=>setVoiceName(event.target.value),
+                                            placeholder: "Придумайте название голоса",
+                                            className: "w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-base text-gray-900 outline-none transition focus:border-gray-400",
+                                            disabled: isUploading || isRecording
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                            lineNumber: 769,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                    lineNumber: 762,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "mb-2 flex items-center justify-between",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                    htmlFor: "voice-description",
+                                                    className: "block text-xs font-semibold uppercase tracking-wide text-gray-500",
+                                                    children: [
+                                                        "Описание голоса ",
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            className: "text-gray-400",
+                                                            children: "(необязательно)"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                            lineNumber: 785,
+                                                            columnNumber: 35
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                    lineNumber: 781,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: `text-xs ${voiceDescription.length > MAX_DESCRIPTION_LENGTH ? "text-red-500" : "text-gray-400"}`,
+                                                    children: [
+                                                        voiceDescription.length,
+                                                        "/",
+                                                        MAX_DESCRIPTION_LENGTH
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                    lineNumber: 787,
+                                                    columnNumber: 17
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                            lineNumber: 780,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
+                                            id: "voice-description",
+                                            value: voiceDescription,
+                                            onChange: (event)=>{
+                                                const value = event.target.value;
+                                                if (value.length <= MAX_DESCRIPTION_LENGTH) {
+                                                    setVoiceDescription(value);
+                                                }
+                                            },
+                                            maxLength: MAX_DESCRIPTION_LENGTH,
+                                            placeholder: "Добавьте описание голоса",
+                                            className: "h-28 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-base text-gray-900 outline-none transition focus:border-gray-400",
+                                            disabled: isUploading || isRecording
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                            lineNumber: 795,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                    lineNumber: 779,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: dropZoneClasses,
+                                    onDragEnter: handleDrag,
+                                    onDragLeave: handleDrag,
+                                    onDragOver: handleDrag,
+                                    onDrop: handleDrop,
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "mx-auto flex max-w-sm flex-col items-center gap-3 text-gray-700",
                                         children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                htmlFor: "voice-description",
-                                                className: "block text-xs font-semibold uppercase tracking-wide text-gray-500",
-                                                children: [
-                                                    "Описание голоса ",
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                        className: "text-gray-400",
-                                                        children: "(необязательно)"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                        lineNumber: 580,
-                                                        columnNumber: 35
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "rounded-2xl border border-purple-200 bg-white p-3 text-purple-500",
+                                                children: "↑"
+                                            }, void 0, false, {
                                                 fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                lineNumber: 576,
+                                                lineNumber: 820,
                                                 columnNumber: 17
                                             }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                className: `text-xs ${voiceDescription.length > MAX_DESCRIPTION_LENGTH ? "text-red-500" : "text-gray-400"}`,
-                                                children: [
-                                                    voiceDescription.length,
-                                                    "/",
-                                                    MAX_DESCRIPTION_LENGTH
-                                                ]
-                                            }, void 0, true, {
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                className: "text-base font-semibold",
+                                                children: "Перетащите аудио файл сюда"
+                                            }, void 0, false, {
                                                 fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                lineNumber: 582,
+                                                lineNumber: 823,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                className: "text-xs text-gray-500",
+                                                children: "MP3, WAV до 11 МБ"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 826,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                type: "button",
+                                                className: "rounded-lg bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:opacity-50",
+                                                onClick: ()=>fileInputRef.current?.click(),
+                                                disabled: isUploading || isRecording,
+                                                children: "Выбрать файл"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 827,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                ref: fileInputRef,
+                                                type: "file",
+                                                accept: "audio/*",
+                                                className: "hidden",
+                                                onChange: handleFileSelect,
+                                                disabled: isUploading || isRecording
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 835,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                        lineNumber: 575,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
-                                        id: "voice-description",
-                                        value: voiceDescription,
-                                        onChange: (event)=>{
-                                            const value = event.target.value;
-                                            if (value.length <= MAX_DESCRIPTION_LENGTH) {
-                                                setVoiceDescription(value);
-                                            }
-                                        },
-                                        maxLength: MAX_DESCRIPTION_LENGTH,
-                                        placeholder: "Добавьте описание голоса",
-                                        className: "h-28 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-base text-gray-900 outline-none transition focus:border-gray-400",
-                                        disabled: isUploading || isRecording
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                        lineNumber: 590,
+                                        lineNumber: 819,
                                         columnNumber: 15
                                     }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                lineNumber: 574,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: dropZoneClasses,
-                                onDragEnter: handleDrag,
-                                onDragLeave: handleDrag,
-                                onDragOver: handleDrag,
-                                onDrop: handleDrop,
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "mx-auto flex max-w-sm flex-col items-center gap-3 text-gray-700",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "rounded-2xl border border-purple-200 bg-white p-3 text-purple-500",
-                                            children: "↑"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 615,
-                                            columnNumber: 17
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                            className: "text-base font-semibold",
-                                            children: "Перетащите аудио файл сюда"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 618,
-                                            columnNumber: 17
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                            className: "text-xs text-gray-500",
-                                            children: "MP3, WAV до 11 МБ"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 621,
-                                            columnNumber: 17
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                            type: "button",
-                                            className: "rounded-lg bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:opacity-50",
-                                            onClick: ()=>fileInputRef.current?.click(),
-                                            disabled: isUploading || isRecording,
-                                            children: "Выбрать файл"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 622,
-                                            columnNumber: 17
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                            ref: fileInputRef,
-                                            type: "file",
-                                            accept: "audio/*",
-                                            className: "hidden",
-                                            onChange: handleFileSelect,
-                                            disabled: isUploading || isRecording
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 630,
-                                            columnNumber: 17
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                    lineNumber: 614,
-                                    columnNumber: 15
-                                }, this)
-                            }, void 0, false, {
-                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                lineNumber: 607,
-                                columnNumber: 13
-                            }, this),
-                            selectedFile && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700",
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex items-center justify-between gap-3",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex items-center gap-3",
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "rounded-lg bg-purple-100 p-2 text-purple-600",
-                                                    children: "🎵"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                    lineNumber: 646,
-                                                    columnNumber: 21
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "font-medium",
-                                                            children: selectedFile.name
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                            lineNumber: 650,
-                                                            columnNumber: 23
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "text-xs text-gray-500",
-                                                            children: [
-                                                                (selectedFile.size / 1024 / 1024).toFixed(2),
-                                                                " МБ"
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                            lineNumber: 651,
-                                                            columnNumber: 23
-                                                        }, this)
-                                                    ]
-                                                }, void 0, true, {
-                                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                    lineNumber: 649,
-                                                    columnNumber: 21
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 645,
-                                            columnNumber: 19
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                            type: "button",
-                                            onClick: ()=>setSelectedFile(null),
-                                            className: "text-gray-400 transition hover:text-red-500",
-                                            disabled: isUploading || isRecording,
-                                            children: "✕"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 656,
-                                            columnNumber: 19
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                    lineNumber: 644,
-                                    columnNumber: 17
-                                }, this)
-                            }, void 0, false, {
-                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                lineNumber: 643,
-                                columnNumber: 15
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "relative",
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "absolute inset-0 flex items-center",
-                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "w-full border-t border-gray-200"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 671,
-                                            columnNumber: 17
-                                        }, this)
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                        lineNumber: 670,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "relative flex justify-center text-xs uppercase",
-                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "bg-white px-2 text-gray-500",
-                                            children: "или"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 674,
-                                            columnNumber: 17
-                                        }, this)
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                        lineNumber: 673,
-                                        columnNumber: 15
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                lineNumber: 669,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center",
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "mx-auto flex max-w-sm flex-col items-center gap-4",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "rounded-full border-4 border-purple-200 bg-white p-4",
-                                            children: isRecording ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "h-12 w-12 animate-pulse rounded-full bg-red-500"
-                                            }, void 0, false, {
-                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                lineNumber: 683,
-                                                columnNumber: 21
-                                            }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "h-12 w-12 rounded-full bg-purple-500"
-                                            }, void 0, false, {
-                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                lineNumber: 685,
-                                                columnNumber: 21
-                                            }, this)
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 681,
-                                            columnNumber: 17
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "text-base font-semibold text-gray-900",
-                                                    children: isRecording ? "Идет запись..." : "Записать с микрофона"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                    lineNumber: 689,
-                                                    columnNumber: 19
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "mt-1 text-xs text-gray-500",
-                                                    children: isRecording ? "Нажмите остановить для завершения записи" : "Нажмите начать для записи голоса"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                    lineNumber: 692,
-                                                    columnNumber: 19
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 688,
-                                            columnNumber: 17
-                                        }, this),
-                                        !isRecording ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                            type: "button",
-                                            onClick: startRecording,
-                                            className: "rounded-lg bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:opacity-50",
-                                            disabled: isUploading || !!selectedFile,
-                                            children: "Начать запись"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 699,
-                                            columnNumber: 19
-                                        }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                            type: "button",
-                                            onClick: stopRecording,
-                                            className: "rounded-lg bg-red-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-red-500",
-                                            children: "Остановить запись"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 708,
-                                            columnNumber: 19
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                    lineNumber: 680,
-                                    columnNumber: 15
-                                }, this)
-                            }, void 0, false, {
-                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                lineNumber: 679,
-                                columnNumber: 13
-                            }, this),
-                            recordedBlob && !isRecording && recordedAudioUrl && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700",
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "space-y-3",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex items-center justify-between gap-3",
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "flex items-center gap-3",
-                                                    children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "rounded-lg bg-green-100 p-2 text-green-600",
-                                                            children: "✓"
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                            lineNumber: 725,
-                                                            columnNumber: 23
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                    className: "font-medium",
-                                                                    children: "Запись завершена"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                                    lineNumber: 729,
-                                                                    columnNumber: 25
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                    className: "text-xs text-gray-500",
-                                                                    children: [
-                                                                        (recordedBlob.size / 1024).toFixed(2),
-                                                                        " КБ"
-                                                                    ]
-                                                                }, void 0, true, {
-                                                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                                    lineNumber: 730,
-                                                                    columnNumber: 25
-                                                                }, this)
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                            lineNumber: 728,
-                                                            columnNumber: 23
-                                                        }, this)
-                                                    ]
-                                                }, void 0, true, {
-                                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                    lineNumber: 724,
-                                                    columnNumber: 21
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                    type: "button",
-                                                    onClick: ()=>{
-                                                        setRecordedBlob(null);
-                                                        if (recordedAudioUrl) {
-                                                            URL.revokeObjectURL(recordedAudioUrl);
-                                                        }
-                                                        setRecordedAudioUrl(null);
-                                                    },
-                                                    className: "text-gray-400 transition hover:text-red-500",
-                                                    disabled: isUploading,
-                                                    children: "✕"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                    lineNumber: 735,
-                                                    columnNumber: 21
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 723,
-                                            columnNumber: 19
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex items-center gap-2 rounded-lg bg-white p-2",
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("audio", {
-                                                ref: audioPlayerRef,
-                                                src: recordedAudioUrl,
-                                                controls: true,
-                                                className: "flex-1",
-                                                style: {
-                                                    height: "32px"
-                                                }
-                                            }, void 0, false, {
-                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                                lineNumber: 752,
-                                                columnNumber: 21
-                                            }, this)
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                            lineNumber: 751,
-                                            columnNumber: 19
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                    lineNumber: 722,
-                                    columnNumber: 17
-                                }, this)
-                            }, void 0, false, {
-                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                lineNumber: 721,
-                                columnNumber: 15
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                        lineNumber: 556,
-                        columnNumber: 11
-                    }, this)
-                }, void 0, false, {
-                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                    lineNumber: 555,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "flex flex-col gap-3 border-t border-gray-200 px-6 py-4 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between sm:gap-4",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex flex-1 items-center gap-4",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                    type: "button",
-                                    onClick: closeModal,
-                                    className: "rounded-lg border border-gray-200 px-5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50",
-                                    disabled: isUploading || isRecording || isWaiting,
-                                    children: "Отмена"
                                 }, void 0, false, {
                                     fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                    lineNumber: 768,
+                                    lineNumber: 812,
                                     columnNumber: 13
                                 }, this),
-                                (isUploading || isWaiting || progress > 0) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "relative h-1 flex-1 overflow-hidden rounded-full bg-gray-200",
+                                selectedFile && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700",
                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500 transition-[width] duration-100 ease-out",
-                                        style: {
-                                            width: `${progress}%`
-                                        },
-                                        "aria-hidden": "true"
-                                    }, void 0, false, {
+                                        className: "flex items-center justify-between gap-3",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex items-center gap-3",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "rounded-lg bg-purple-100 p-2 text-purple-600",
+                                                        children: "🎵"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                        lineNumber: 851,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                className: "font-medium",
+                                                                children: selectedFile.name
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                                lineNumber: 855,
+                                                                columnNumber: 23
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                className: "text-xs text-gray-500",
+                                                                children: [
+                                                                    (selectedFile.size / 1024 / 1024).toFixed(2),
+                                                                    " МБ"
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                                lineNumber: 856,
+                                                                columnNumber: 23
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                        lineNumber: 854,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 850,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                type: "button",
+                                                onClick: ()=>setSelectedFile(null),
+                                                className: "text-gray-400 transition hover:text-red-500",
+                                                disabled: isUploading || isRecording,
+                                                children: "✕"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 861,
+                                                columnNumber: 19
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
                                         fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                        lineNumber: 778,
+                                        lineNumber: 849,
                                         columnNumber: 17
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                                    lineNumber: 777,
+                                    lineNumber: 848,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "relative",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "absolute inset-0 flex items-center",
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "w-full border-t border-gray-200"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 876,
+                                                columnNumber: 17
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                            lineNumber: 875,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "relative flex justify-center text-xs uppercase",
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "bg-white px-2 text-gray-500",
+                                                children: "или"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 879,
+                                                columnNumber: 17
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                            lineNumber: 878,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                    lineNumber: 874,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center",
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "mx-auto flex max-w-sm flex-col items-center gap-4",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "rounded-full border-4 border-purple-200 bg-white p-4",
+                                                children: isRecording ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "h-12 w-12 animate-pulse rounded-full bg-red-500"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                    lineNumber: 888,
+                                                    columnNumber: 21
+                                                }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "h-12 w-12 rounded-full bg-purple-500"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                    lineNumber: 890,
+                                                    columnNumber: 21
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 886,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                        className: "text-base font-semibold text-gray-900",
+                                                        children: isRecording ? "Идет запись..." : "Записать с микрофона"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                        lineNumber: 894,
+                                                        columnNumber: 19
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                        className: "mt-1 text-xs text-gray-500",
+                                                        children: isRecording ? "Нажмите остановить для завершения записи" : "Прочитайте отрывок любого текста в естественной форме (не менее 2 минут)"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                        lineNumber: 897,
+                                                        columnNumber: 19
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 893,
+                                                columnNumber: 17
+                                            }, this),
+                                            (isTestingMicrophone || isRecording) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "w-full space-y-1.5",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                        className: "text-xs font-medium text-gray-600",
+                                                        children: "Тест микрофона"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                        lineNumber: 907,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "relative h-1.5 w-full overflow-hidden rounded-full bg-gray-200",
+                                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-transparent via-purple-500/50 to-purple-600 transition-all duration-75 ease-out",
+                                                            style: {
+                                                                width: `${Math.max(2, audioLevel)}%`
+                                                            }
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                            lineNumber: 911,
+                                                            columnNumber: 23
+                                                        }, this)
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                        lineNumber: 910,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 906,
+                                                columnNumber: 19
+                                            }, this),
+                                            isRecording && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "w-full",
+                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "rounded-lg bg-purple-50 px-4 py-2",
+                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                        className: "text-sm font-semibold text-purple-700",
+                                                        children: [
+                                                            "Осталось времени: ",
+                                                            Math.floor(recordingTimer / 60),
+                                                            ":",
+                                                            (recordingTimer % 60).toString().padStart(2, '0')
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                        lineNumber: 923,
+                                                        columnNumber: 23
+                                                    }, this)
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                    lineNumber: 922,
+                                                    columnNumber: 21
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 921,
+                                                columnNumber: 19
+                                            }, this),
+                                            !isRecording ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                type: "button",
+                                                onClick: startRecording,
+                                                className: "rounded-lg bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:opacity-50",
+                                                disabled: isUploading || !!selectedFile,
+                                                children: "Начать запись"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 931,
+                                                columnNumber: 19
+                                            }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                type: "button",
+                                                onClick: stopRecording,
+                                                className: "rounded-lg bg-red-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-red-500",
+                                                children: "Остановить запись"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 940,
+                                                columnNumber: 19
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                        lineNumber: 885,
+                                        columnNumber: 15
+                                    }, this)
+                                }, void 0, false, {
+                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                    lineNumber: 884,
+                                    columnNumber: 13
+                                }, this),
+                                recordedBlob && !isRecording && recordedAudioUrl && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700",
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "space-y-3",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex items-center justify-between gap-3",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "flex items-center gap-3",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                className: "rounded-lg bg-green-100 p-2 text-green-600",
+                                                                children: "✓"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                                lineNumber: 957,
+                                                                columnNumber: 23
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                children: [
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                        className: "font-medium",
+                                                                        children: "Запись завершена"
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                                        lineNumber: 961,
+                                                                        columnNumber: 25
+                                                                    }, this),
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                        className: "text-xs text-gray-500",
+                                                                        children: [
+                                                                            (recordedBlob.size / 1024).toFixed(2),
+                                                                            " КБ"
+                                                                        ]
+                                                                    }, void 0, true, {
+                                                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                                        lineNumber: 962,
+                                                                        columnNumber: 25
+                                                                    }, this)
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                                lineNumber: 960,
+                                                                columnNumber: 23
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                        lineNumber: 956,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                        type: "button",
+                                                        onClick: ()=>{
+                                                            setRecordedBlob(null);
+                                                            if (recordedAudioUrl) {
+                                                                URL.revokeObjectURL(recordedAudioUrl);
+                                                            }
+                                                            setRecordedAudioUrl(null);
+                                                        },
+                                                        className: "text-gray-400 transition hover:text-red-500",
+                                                        disabled: isUploading,
+                                                        children: "✕"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                        lineNumber: 967,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 955,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex items-center gap-2 rounded-lg bg-white p-2",
+                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("audio", {
+                                                    ref: audioPlayerRef,
+                                                    src: recordedAudioUrl,
+                                                    controls: true,
+                                                    className: "flex-1",
+                                                    style: {
+                                                        height: "32px"
+                                                    }
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                    lineNumber: 984,
+                                                    columnNumber: 21
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 983,
+                                                columnNumber: 19
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                        lineNumber: 954,
+                                        columnNumber: 17
+                                    }, this)
+                                }, void 0, false, {
+                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                    lineNumber: 953,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                            lineNumber: 767,
+                            lineNumber: 761,
                             columnNumber: 11
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                        lineNumber: 760,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex flex-col gap-3 border-t border-gray-200 px-6 py-4 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between sm:gap-4",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex flex-1 items-center gap-4",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        type: "button",
+                                        onClick: closeModal,
+                                        className: "rounded-lg border border-gray-200 px-5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50",
+                                        disabled: isUploading || isRecording || isWaiting,
+                                        children: "Отмена"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                        lineNumber: 1000,
+                                        columnNumber: 13
+                                    }, this),
+                                    (isUploading || isWaiting || progress > 0) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "relative h-1 flex-1 overflow-hidden rounded-full bg-gray-200",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500 transition-[width] duration-100 ease-out",
+                                            style: {
+                                                width: `${progress}%`
+                                            },
+                                            "aria-hidden": "true"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                            lineNumber: 1010,
+                                            columnNumber: 17
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                        lineNumber: 1009,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                lineNumber: 999,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                type: "button",
+                                onClick: handleCloneVoice,
+                                disabled: isUploading || isRecording || isWaiting || !voiceName.trim() || !selectedFile && !recordedBlob,
+                                className: "rounded-lg bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:bg-gray-300 sm:ml-auto",
+                                children: isUploading ? "Клонируем..." : isWaiting ? "Ожидаем..." : "Клонировать голос"
+                            }, void 0, false, {
+                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                lineNumber: 1018,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                        lineNumber: 998,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                lineNumber: 745,
+                columnNumber: 7
+            }, this),
+            errorModal.isOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "fixed inset-0 z-[60] flex items-center justify-center bg-black/50",
+                onMouseDown: (e)=>{
+                    if (e.target === e.currentTarget) {
+                        setErrorModal({
+                            isOpen: false,
+                            message: ""
+                        });
+                    }
+                },
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "mx-4 w-full max-w-md rounded-3xl border border-gray-100 bg-white p-6 shadow-sm ring-1 ring-black/5",
+                    onMouseDown: (e)=>e.stopPropagation(),
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "mb-4 flex items-center justify-between",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                                    className: "text-xl font-semibold text-gray-900",
+                                    children: "Ошибка"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                    lineNumber: 1054,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                    type: "button",
+                                    onClick: ()=>setErrorModal({
+                                            isOpen: false,
+                                            message: ""
+                                        }),
+                                    className: "rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "sr-only",
+                                            children: "Закрыть"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                            lineNumber: 1062,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                            className: "h-5 w-5",
+                                            fill: "none",
+                                            viewBox: "0 0 24 24",
+                                            stroke: "currentColor",
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                strokeLinecap: "round",
+                                                strokeLinejoin: "round",
+                                                strokeWidth: 2,
+                                                d: "M6 18L18 6M6 6l12 12"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                                lineNumber: 1064,
+                                                columnNumber: 19
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                            lineNumber: 1063,
+                                            columnNumber: 17
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                    lineNumber: 1057,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                            lineNumber: 1053,
+                            columnNumber: 13
                         }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            type: "button",
-                            onClick: handleCloneVoice,
-                            disabled: isUploading || isRecording || isWaiting || !voiceName.trim() || !selectedFile && !recordedBlob,
-                            className: "rounded-lg bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:bg-gray-300 sm:ml-auto",
-                            children: isUploading ? "Клонируем..." : isWaiting ? "Ожидаем..." : "Клонировать голос"
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "mb-6",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                className: "whitespace-pre-line text-sm text-gray-600",
+                                children: errorModal.message
+                            }, void 0, false, {
+                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                lineNumber: 1069,
+                                columnNumber: 15
+                            }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                            lineNumber: 786,
-                            columnNumber: 11
+                            lineNumber: 1068,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "flex justify-end",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                type: "button",
+                                onClick: ()=>setErrorModal({
+                                        isOpen: false,
+                                        message: ""
+                                    }),
+                                className: "rounded-lg border border-purple-600 bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-700",
+                                children: "OK"
+                            }, void 0, false, {
+                                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                                lineNumber: 1074,
+                                columnNumber: 15
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                            lineNumber: 1073,
+                            columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-                    lineNumber: 766,
-                    columnNumber: 9
+                    lineNumber: 1049,
+                    columnNumber: 11
                 }, this)
-            ]
-        }, void 0, true, {
-            fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-            lineNumber: 540,
-            columnNumber: 7
-        }, this)
-    }, void 0, false, {
+            }, void 0, false, {
+                fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
+                lineNumber: 1041,
+                columnNumber: 9
+            }, this)
+        ]
+    }, void 0, true, {
         fileName: "[project]/app/voices/components/VoiceCreateModal.tsx",
-        lineNumber: 539,
+        lineNumber: 744,
         columnNumber: 5
     }, this);
 }

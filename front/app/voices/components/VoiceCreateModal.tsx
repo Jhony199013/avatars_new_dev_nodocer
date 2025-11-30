@@ -29,17 +29,84 @@ export function VoiceCreateModal({
   const [isWaiting, setIsWaiting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
+  const [audioLevel, setAudioLevel] = useState(0); // Уровень громкости (0-100)
+  const [isTestingMicrophone, setIsTestingMicrophone] = useState(false); // Тест микрофона до записи
+  const [recordingTimer, setRecordingTimer] = useState(120); // Таймер записи в секундах (2 минуты)
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: "" });
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioPlayerRef = useRef<HTMLAudioElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const stopProgressLoop = useCallback(() => {
     if (progressIntervalRef.current) {
       clearInterval(progressIntervalRef.current);
       progressIntervalRef.current = null;
+    }
+  }, []);
+
+  const stopTimer = useCallback(() => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+  }, []);
+
+  const stopAudioAnalysis = useCallback(() => {
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    if (audioContextRef.current && audioContextRef.current.state !== "closed") {
+      audioContextRef.current.close().catch(console.error);
+    }
+    setAudioLevel(0);
+  }, []);
+
+  const startAudioAnalysis = useCallback((stream: MediaStream) => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const analyser = audioContext.createAnalyser();
+      const microphone = audioContext.createMediaStreamSource(stream);
+      
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.8;
+      microphone.connect(analyser);
+      
+      audioContextRef.current = audioContext;
+      analyserRef.current = analyser;
+      
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      
+      const updateAudioLevel = () => {
+        if (!analyserRef.current) return;
+        
+        analyserRef.current.getByteFrequencyData(dataArray);
+        
+        // Вычисляем средний уровень громкости
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          sum += dataArray[i];
+        }
+        const average = sum / dataArray.length;
+        
+        // Преобразуем в проценты (0-100)
+        const level = Math.min(100, (average / 255) * 100);
+        setAudioLevel(level);
+        
+        animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
+      };
+      
+      updateAudioLevel();
+    } catch (error) {
+      console.error("Ошибка анализа аудио:", error);
     }
   }, []);
 
@@ -66,16 +133,24 @@ export function VoiceCreateModal({
     setRecordedAudioUrl(null);
     setIsRecording(false);
     setIsWaiting(false);
+    setIsTestingMicrophone(false);
     setProgress(0);
+    setRecordingTimer(120);
     stopProgressLoop();
+    stopTimer();
+    stopAudioAnalysis();
     audioChunksRef.current = [];
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop();
     }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
     if (mediaRecorderRef.current?.stream) {
       mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
     }
-  }, [recordedAudioUrl, stopProgressLoop]);
+  }, [recordedAudioUrl, stopProgressLoop, stopTimer, stopAudioAnalysis]);
 
   const closeModal = useCallback(() => {
     resetState();
@@ -84,6 +159,9 @@ export function VoiceCreateModal({
 
   useEffect(() => {
     return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
       if (mediaRecorderRef.current?.stream) {
         mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
       }
@@ -92,16 +170,22 @@ export function VoiceCreateModal({
         URL.revokeObjectURL(recordedAudioUrl);
       }
       stopProgressLoop();
+      stopTimer();
+      stopAudioAnalysis();
     };
-  }, [recordedAudioUrl, stopProgressLoop]);
+  }, [recordedAudioUrl, stopProgressLoop, stopTimer, stopAudioAnalysis]);
+
+  const showError = useCallback((message: string) => {
+    setErrorModal({ isOpen: true, message });
+  }, []);
 
   const validateFile = (file: File): boolean => {
     if (!ALLOWED_TYPES.includes(file.type.toLowerCase())) {
-      alert("Неподдерживаемый формат файла. Допустимы только MP3, WAV, WebM или OGG.");
+      showError("Неподдерживаемый формат файла. Допустимы только MP3, WAV, WebM или OGG.");
       return false;
     }
     if (file.size > MAX_FILE_SIZE) {
-      alert(
+      showError(
         `Файл превышает лимит ${MAX_FILE_SIZE_MB} МБ. Размер файла: ${(file.size / 1024 / 1024).toFixed(1)} МБ`,
       );
       return false;
@@ -142,28 +226,14 @@ export function VoiceCreateModal({
     }
   }, []);
 
-  const startRecording = async () => {
+  const startMicrophoneTest = useCallback(async () => {
     try {
       // Проверяем доступность API
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert(
+        showError(
           "Ваш браузер не поддерживает запись с микрофона. Пожалуйста, используйте современный браузер (Chrome, Firefox, Edge)."
         );
         return;
-      }
-
-      // Проверяем разрешения перед запросом
-      try {
-        const permissionStatus = await navigator.permissions.query({ name: "microphone" as PermissionName });
-        if (permissionStatus.state === "denied") {
-          alert(
-            "Доступ к микрофону запрещен. Пожалуйста, разрешите доступ к микрофону в настройках браузера и обновите страницу."
-          );
-          return;
-        }
-      } catch (permError) {
-        // Некоторые браузеры не поддерживают permissions API, продолжаем
-        console.log("Permissions API не поддерживается, продолжаем запрос");
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -173,6 +243,110 @@ export function VoiceCreateModal({
           autoGainControl: true,
         } 
       });
+      
+      streamRef.current = stream;
+      setIsTestingMicrophone(true);
+      
+      // Запускаем анализ аудио для индикатора громкости
+      startAudioAnalysis(stream);
+    } catch (error: unknown) {
+      console.error("Ошибка доступа к микрофону:", error);
+      setIsTestingMicrophone(false);
+      
+      let errorMessage = "Не удалось получить доступ к микрофону.";
+      
+      if (error instanceof Error) {
+        if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+          errorMessage = 
+            "Доступ к микрофону запрещен.\n\n" +
+            "Пожалуйста:\n" +
+            "1. Нажмите на иконку замка в адресной строке браузера\n" +
+            "2. Разрешите доступ к микрофону\n" +
+            "3. Обновите страницу и попробуйте снова";
+        } else if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
+          errorMessage = "Микрофон не найден. Убедитесь, что микрофон подключен и включен.";
+        } else if (error.name === "NotReadableError" || error.name === "TrackStartError") {
+          errorMessage = 
+            "Микрофон уже используется другим приложением.\n\n" +
+            "Закройте другие приложения, использующие микрофон, и попробуйте снова.";
+        } else {
+          errorMessage = `Ошибка: ${error.message}`;
+        }
+      }
+      
+      showError(errorMessage);
+    }
+  }, [startAudioAnalysis, showError]);
+
+  const stopMicrophoneTest = useCallback(() => {
+    setIsTestingMicrophone(false);
+    stopAudioAnalysis();
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+  }, [stopAudioAnalysis]);
+
+  // Автоматически запускаем тест микрофона при открытии модального окна
+  useEffect(() => {
+    if (isOpen && !isRecording && !isTestingMicrophone && !streamRef.current) {
+      startMicrophoneTest();
+    }
+    
+    return () => {
+      // Останавливаем тест при закрытии модального окна (если не идет запись)
+      if (!isOpen && !isRecording && isTestingMicrophone) {
+        stopMicrophoneTest();
+      }
+    };
+  }, [isOpen, isRecording, isTestingMicrophone, startMicrophoneTest, stopMicrophoneTest]);
+
+  const startRecording = async () => {
+    try {
+      // Проверяем доступность API
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showError(
+          "Ваш браузер не поддерживает запись с микрофона. Пожалуйста, используйте современный браузер (Chrome, Firefox, Edge)."
+        );
+        return;
+      }
+
+      // Проверяем разрешения перед запросом
+      try {
+        const permissionStatus = await navigator.permissions.query({ name: "microphone" as PermissionName });
+        if (permissionStatus.state === "denied") {
+          showError(
+            "Доступ к микрофону запрещен. Пожалуйста, разрешите доступ к микрофону в настройках браузера и обновите страницу."
+          );
+          return;
+        }
+      } catch (permError) {
+        // Некоторые браузеры не поддерживают permissions API, продолжаем
+        console.log("Permissions API не поддерживается, продолжаем запрос");
+      }
+
+      // Всегда создаем новый поток для записи, чтобы избежать конфликтов
+      // Если был тест микрофона, остановим его поток после создания нового
+      const oldStream = streamRef.current;
+      
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        } 
+      });
+      
+      // Останавливаем старый поток из теста, если он был
+      if (oldStream && isTestingMicrophone) {
+        stopAudioAnalysis();
+        oldStream.getTracks().forEach(track => track.stop());
+      }
+      
+      streamRef.current = stream;
+      
+      // Запускаем анализ аудио для индикатора громкости
+      startAudioAnalysis(stream);
       
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: MediaRecorder.isTypeSupported("audio/webm") 
@@ -201,18 +375,36 @@ export function VoiceCreateModal({
         setRecordedAudioUrl(audioUrl);
         
         setSelectedFile(null); // Сбрасываем файл если записали
+        stopAudioAnalysis();
         stream.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
       };
 
       mediaRecorder.onerror = (event) => {
         console.error("Ошибка записи:", event);
         setIsRecording(false);
+        stopAudioAnalysis();
         stream.getTracks().forEach(track => track.stop());
-        alert("Произошла ошибка при записи. Попробуйте еще раз.");
+        streamRef.current = null;
+        showError("Произошла ошибка при записи. Попробуйте еще раз.");
       };
 
       mediaRecorder.start();
       setIsRecording(true);
+      setIsTestingMicrophone(false); // Останавливаем тест, начинаем запись
+      setRecordingTimer(120); // Сбрасываем таймер на 2 минуты
+      
+      // Запускаем таймер обратного отсчета
+      stopTimer();
+      timerIntervalRef.current = setInterval(() => {
+        setRecordingTimer((prev) => {
+          if (prev <= 1) {
+            stopTimer();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     } catch (error: unknown) {
       console.error("Ошибка доступа к микрофону:", error);
       setIsRecording(false);
@@ -238,16 +430,29 @@ export function VoiceCreateModal({
         }
       }
       
-      alert(errorMessage);
+      showError(errorMessage);
     }
   };
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      stopTimer();
+      stopAudioAnalysis();
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
     }
-  };
+  }, [stopTimer, stopAudioAnalysis]);
+
+  // Автоматическая остановка записи при достижении 0
+  useEffect(() => {
+    if (isRecording && recordingTimer === 0) {
+      stopRecording();
+    }
+  }, [isRecording, recordingTimer, stopRecording]);
 
   const loadLameJs = (): Promise<any> => {
     return new Promise((resolve, reject) => {
@@ -363,7 +568,7 @@ export function VoiceCreateModal({
 
   const handleCloneVoice = async () => {
     if (!voiceName.trim()) {
-      alert("Введите название голоса");
+      showError("Введите название голоса");
       return;
     }
 
@@ -380,7 +585,7 @@ export function VoiceCreateModal({
           .eq("uid", user.id);
 
         if (voicesData && voicesData.length >= 3) {
-          alert("В демо-режиме можно создать максимум 3 голоса");
+          showError("В демо-режиме можно создать максимум 3 голоса");
           return;
         }
       }
@@ -407,14 +612,14 @@ export function VoiceCreateModal({
         stopProgressLoop();
         setIsUploading(false);
         setIsWaiting(false);
-        alert("Ошибка при конвертации записи. Попробуйте еще раз.");
+        showError("Ошибка при конвертации записи. Попробуйте еще раз.");
         return;
       }
     } else {
       stopProgressLoop();
       setIsUploading(false);
       setIsWaiting(false);
-      alert("Загрузите файл или запишите голос с микрофона");
+      showError("Загрузите файл или запишите голос с микрофона");
       return;
     }
 
@@ -422,7 +627,7 @@ export function VoiceCreateModal({
       stopProgressLoop();
       setIsUploading(false);
       setIsWaiting(false);
-      alert(
+      showError(
         `Файл превышает лимит ${MAX_FILE_SIZE_MB} МБ. Размер файла: ${(audioFile.size / 1024 / 1024).toFixed(1)} МБ`,
       );
       return;
@@ -509,7 +714,7 @@ export function VoiceCreateModal({
       // Если не нашли за отведенное время
       stopProgressLoop();
       setIsWaiting(false);
-      alert("Голос отправлен на обработку. Проверьте список голосов через несколько секунд.");
+      showError("Голос отправлен на обработку. Проверьте список голосов через несколько секунд.");
       await onVoiceCreated?.();
       closeModal();
     } catch (error) {
@@ -517,7 +722,7 @@ export function VoiceCreateModal({
       stopProgressLoop();
       setIsUploading(false);
       setIsWaiting(false);
-      alert(
+      showError(
         `Ошибка при клонировании голоса: ${
           error instanceof Error ? error.message : "Неизвестная ошибка"
         }`
@@ -692,9 +897,36 @@ export function VoiceCreateModal({
                   <p className="mt-1 text-xs text-gray-500">
                     {isRecording
                       ? "Нажмите остановить для завершения записи"
-                      : "Нажмите начать для записи голоса"}
+                      : "Прочитайте отрывок любого текста в естественной форме (не менее 2 минут)"}
                   </p>
                 </div>
+                
+                {/* Индикатор громкости - показываем всегда когда тестируем или записываем */}
+                {(isTestingMicrophone || isRecording) && (
+                  <div className="w-full space-y-1.5">
+                    <p className="text-xs font-medium text-gray-600">
+                      Тест микрофона
+                    </p>
+                    <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-transparent via-purple-500/50 to-purple-600 transition-all duration-75 ease-out"
+                        style={{ width: `${Math.max(2, audioLevel)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {/* Таймер обратного отсчета во время записи */}
+                {isRecording && (
+                  <div className="w-full">
+                    <div className="rounded-lg bg-purple-50 px-4 py-2">
+                      <p className="text-sm font-semibold text-purple-700">
+                        Осталось времени: {Math.floor(recordingTimer / 60)}:{(recordingTimer % 60).toString().padStart(2, '0')}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
                 {!isRecording ? (
                   <button
                     type="button"
@@ -803,6 +1035,53 @@ export function VoiceCreateModal({
           </button>
         </div>
       </div>
+
+      {/* Кастомный модал ошибки */}
+      {errorModal.isOpen && (
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) {
+              setErrorModal({ isOpen: false, message: "" });
+            }
+          }}
+        >
+          <div 
+            className="mx-4 w-full max-w-md rounded-3xl border border-gray-100 bg-white p-6 shadow-sm ring-1 ring-black/5"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Ошибка
+              </h2>
+              <button
+                type="button"
+                onClick={() => setErrorModal({ isOpen: false, message: "" })}
+                className="rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+              >
+                <span className="sr-only">Закрыть</span>
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="mb-6">
+              <p className="whitespace-pre-line text-sm text-gray-600">
+                {errorModal.message}
+              </p>
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setErrorModal({ isOpen: false, message: "" })}
+                className="rounded-lg border border-purple-600 bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-700"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

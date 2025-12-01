@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { safeGetUser } from "@/lib/authUtils";
 import { AuthCard } from "./components/AuthCard";
 
 export const dynamic = 'force-dynamic';
@@ -12,9 +12,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { user } = await safeGetUser();
       if (user) {
         router.push("/");
       }

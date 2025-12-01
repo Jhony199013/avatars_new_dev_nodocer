@@ -70,6 +70,7 @@ export function CanvasArea({
   isUploadingMedia = false,
 }: CanvasAreaProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const layersButtonRef = useRef<HTMLButtonElement>(null);
   const layersPanelRef = useRef<HTMLDivElement>(null);
@@ -81,6 +82,7 @@ export function CanvasArea({
   const [isMediaPanelOpen, setIsMediaPanelOpen] = useState(false);
   const [draggedMediaAssetId, setDraggedMediaAssetId] = useState<string | null>(null);
   const [isDraggingOverCanvas, setIsDraggingOverCanvas] = useState(false);
+  const [canvasDimensions, setCanvasDimensions] = useState<{ width: number; height: number } | null>(null);
 
   const mediaUsageOnScene = useMemo(() => {
     return elements.reduce<Record<string, number>>((acc, element) => {
@@ -176,6 +178,61 @@ export function CanvasArea({
   const [avatarSizeOverlay, setAvatarSizeOverlay] = useState<{ width: number; height: number } | null>(null);
 
   const canvasSize = CANVAS_SIZES[aspectRatio];
+  
+  // Вычисляем размер канвы на основе доступного пространства контейнера
+  useEffect(() => {
+    const updateCanvasSize = () => {
+      if (!containerRef.current) return;
+      
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const containerWidth = containerRect.width - 8; // Учитываем padding p-1 (4px с каждой стороны)
+      const containerHeight = containerRect.height - 8;
+      
+      const targetAspectRatio = aspectRatio === "16:9" ? 16 / 9 : 9 / 16;
+      
+      // Вычисляем размер канвы, чтобы она вписывалась в контейнер, сохраняя пропорции
+      let width: number;
+      let height: number;
+      
+      if (aspectRatio === "16:9") {
+        // Для 16:9 пробуем использовать всю ширину
+        width = containerWidth;
+        height = width / targetAspectRatio;
+        
+        // Если высота не помещается, используем высоту контейнера
+        if (height > containerHeight) {
+          height = containerHeight;
+          width = height * targetAspectRatio;
+        }
+      } else {
+        // Для 9:16 пробуем использовать всю высоту
+        height = containerHeight;
+        width = height * targetAspectRatio;
+        
+        // Если ширина не помещается, используем ширину контейнера
+        if (width > containerWidth) {
+          width = containerWidth;
+          height = width / targetAspectRatio;
+        }
+      }
+      
+      setCanvasDimensions({ width, height });
+    };
+    
+    updateCanvasSize();
+    
+    const resizeObserver = new ResizeObserver(updateCanvasSize);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    
+    window.addEventListener("resize", updateCanvasSize);
+    
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateCanvasSize);
+    };
+  }, [aspectRatio]);
   
   // Получаем пропорции изображения аватара для правильного масштабирования
   const avatarImageAspectRatio = useImageAspectRatio(avatar?.photo ?? null);
@@ -418,9 +475,13 @@ export function CanvasArea({
             setSnapPoint(null);
           }
 
-          // Ограничиваем позицию так, чтобы центр аватара не выходил за границы канвы
-          nextX = Math.max(0, Math.min(canvasSize.width, nextX));
-          nextY = Math.max(0, Math.min(canvasSize.height, nextY));
+          // Ограничиваем позицию так, чтобы аватар не выходил за границы канвы
+          const { width: avatarWidth, height: avatarHeight } = getAvatarRenderDimensions();
+          const halfWidth = avatarWidth / 2;
+          const halfHeight = avatarHeight / 2;
+          
+          nextX = Math.max(halfWidth, Math.min(canvasSize.width - halfWidth, nextX));
+          nextY = Math.max(halfHeight, Math.min(canvasSize.height - halfHeight, nextY));
 
           setAvatarDragOverlay({ x: nextX, y: nextY });
           const clamped = clampAvatarPosition({ x: nextX, y: nextY }, avatarWidth, avatarHeight);
@@ -543,11 +604,12 @@ export function CanvasArea({
 
           // Ограничиваем минимальный и максимальный размер в пикселях
           const minSizePx = Math.min(canvasSize.width, canvasSize.height) * 0.05; // минимум 5% от меньшей стороны
-          const maxSizePx = Math.min(canvasSize.width, canvasSize.height) * 0.95; // максимум 95% от меньшей стороны
+          const maxWidthPx = canvasSize.width; // Максимальная ширина = 100% ширины канвы
+          const maxHeightPx = canvasSize.height; // Максимальная высота = 100% высоты канвы
           
           // Ограничиваем ширину
-          if (newWidth > maxSizePx) {
-            newWidth = maxSizePx;
+          if (newWidth > maxWidthPx) {
+            newWidth = maxWidthPx;
             newHeight = avatarImageAspectRatio ? newWidth / avatarImageAspectRatio : newHeight;
           }
           if (newWidth < minSizePx) {
@@ -556,13 +618,36 @@ export function CanvasArea({
           }
           
           // Ограничиваем высоту (если она слишком большая)
-          if (newHeight > maxSizePx) {
-            newHeight = maxSizePx;
+          if (newHeight > maxHeightPx) {
+            newHeight = maxHeightPx;
             newWidth = avatarImageAspectRatio ? newHeight * avatarImageAspectRatio : newWidth;
           }
           if (newHeight < minSizePx) {
             newHeight = minSizePx;
             newWidth = avatarImageAspectRatio ? newHeight * avatarImageAspectRatio : newWidth;
+          }
+          
+          // Проверяем, что элемент не выходит за границы канвы после изменения размера
+          // Если выходит, корректируем позицию
+          const halfWidth = newWidth / 2;
+          const halfHeight = newHeight / 2;
+          let adjustedX = avatarPosition.x;
+          let adjustedY = avatarPosition.y;
+          
+          if (adjustedX - halfWidth < 0) {
+            adjustedX = halfWidth;
+          } else if (adjustedX + halfWidth > canvasSize.width) {
+            adjustedX = canvasSize.width - halfWidth;
+          }
+          
+          if (adjustedY - halfHeight < 0) {
+            adjustedY = halfHeight;
+          } else if (adjustedY + halfHeight > canvasSize.height) {
+            adjustedY = canvasSize.height - halfHeight;
+          }
+          
+          if (adjustedX !== avatarPosition.x || adjustedY !== avatarPosition.y) {
+            onAvatarPositionChange({ x: adjustedX, y: adjustedY });
           }
 
           setAvatarSizeOverlay({ width: newWidth, height: newHeight });
@@ -836,7 +921,7 @@ export function CanvasArea({
       </div>
 
       <div className="relative flex-1 min-h-0 overflow-hidden">
-        <div className="flex h-full w-full items-center justify-center p-2">
+        <div ref={containerRef} className="grid h-full w-full place-items-center p-1">
           <div
             ref={canvasRef}
             onDragOver={(e) => {
@@ -884,13 +969,14 @@ export function CanvasArea({
               onUseMediaAssetAtPosition(draggedMediaAssetId, canvasX, canvasY);
               setDraggedMediaAssetId(null);
             }}
-            className={`relative overflow-visible rounded-2xl bg-white border-2 border-dashed transition ${
+            className={`relative overflow-hidden rounded-2xl bg-white border-2 border-dashed transition ${
               isDraggingOverCanvas ? "border-blue-400 bg-blue-50" : "border-gray-300"
             }`}
             style={{ 
               aspectRatio: aspectRatio === "16:9" ? "16 / 9" : "9 / 16",
-              width: aspectRatio === "16:9" ? "100%" : "auto",
-              height: aspectRatio === "9:16" ? "100%" : "auto",
+              // Используем вычисленные размеры на основе доступного пространства контейнера
+              width: canvasDimensions ? `${canvasDimensions.width}px` : aspectRatio === "16:9" ? "100%" : "auto",
+              height: canvasDimensions ? `${canvasDimensions.height}px` : aspectRatio === "9:16" ? "100%" : "auto",
               maxWidth: "100%",
               maxHeight: "100%",
             }}
@@ -965,6 +1051,7 @@ export function CanvasArea({
                       onResizeStart={() => {}}
                       screenToCanvas={screenToCanvas}
                       onElementSizeChange={onElementSizeChange}
+                      onElementPositionChange={onElementPositionChange}
                       positionOverlay={
                         dragOverlay && dragOverlay.id === element.id
                           ? { x: dragOverlay.x, y: dragOverlay.y }

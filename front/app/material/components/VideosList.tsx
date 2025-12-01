@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { safeGetUser } from "@/lib/authUtils";
 import { GetVideos, type VideoRow } from "../servers/GetVideos";
 import { VideoLoadingBlock } from "./VideoLoadingBlock";
 import { VideoDisplay } from "./VideoDisplay";
@@ -30,11 +31,9 @@ export function VideosList() {
   // Инициализация и первая загрузка
   useEffect(() => {
     const initializeVideos = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { user, error } = await safeGetUser();
 
-      if (!user) {
+      if (error || !user) {
         router.push("/login");
         setCurrentUserId(null);
         setVideos([]);

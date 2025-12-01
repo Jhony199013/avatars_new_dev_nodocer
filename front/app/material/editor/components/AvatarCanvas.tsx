@@ -104,8 +104,8 @@ export function AvatarCanvas({
         }}
         className="absolute right-0 top-0 flex items-center justify-center rounded-full bg-red-500 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100 z-10"
         style={{
-          width: `${Math.min(40, Math.max(24, Math.min(size.width, size.height) * 0.08))}px`,
-          height: `${Math.min(40, Math.max(24, Math.min(size.width, size.height) * 0.08))}px`,
+          width: `${Math.min(28, Math.max(20, Math.min(size.width, size.height) * 0.06))}px`,
+          height: `${Math.min(28, Math.max(20, Math.min(size.width, size.height) * 0.06))}px`,
           transform: 'translate(50%, -50%)',
         }}
         aria-label="Удалить аватар"

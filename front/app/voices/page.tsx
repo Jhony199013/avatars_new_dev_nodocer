@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { safeGetUser } from "@/lib/authUtils";
 
 import { EmptyState } from "@/components/EmptyState";
 import { Header } from "@/components/ui/Header";
@@ -29,19 +30,17 @@ export default function VoicesPage() {
   const fetchVoices = useCallback(async () => {
     setIsFetchingVoices(true);
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { user, error: authError } = await safeGetUser();
 
-      if (!user) {
+      if (authError || !user) {
         router.push("/login");
-      setCurrentUserId(null);
-      setVoices([]);
-      setIsFetchingVoices(false);
-      return;
-    }
+        setCurrentUserId(null);
+        setVoices([]);
+        setIsFetchingVoices(false);
+        return;
+      }
 
-    setCurrentUserId(user.id);
+      setCurrentUserId(user.id);
 
     const { data, error } = await supabase
       .from("voices")

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { safeGetUser } from "@/lib/authUtils";
 import { VideosEmptyState } from "./VideosEmptyState";
 import { VideoCreationWizard } from "./VideoCreationWizard";
 import { GetVideos, type VideoRow } from "@/app/material/servers/GetVideos";
@@ -43,11 +44,9 @@ export function VideosSection({
   // Инициализация и первая загрузка
   useEffect(() => {
     const initializeVideos = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { user, error } = await safeGetUser();
 
-      if (!user) {
+      if (error || !user) {
         router.push("/login");
         setCurrentUserId(null);
         setVideos([]);
@@ -84,11 +83,9 @@ export function VideosSection({
   const handleCreateVideo = async () => {
     // Проверяем наличие аватаров и голосов перед открытием редактора
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { user, error } = await safeGetUser();
 
-      if (!user) {
+      if (error || !user) {
         router.push("/login");
         return;
       }

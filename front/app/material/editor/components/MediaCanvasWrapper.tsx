@@ -17,6 +17,7 @@ type MediaCanvasWrapperProps = {
   ) => void;
   screenToCanvas: (screenPx: number, dimension: "width" | "height") => number;
   onElementSizeChange: (elementId: string, size: { width: number; height: number }) => void;
+  onElementPositionChange?: (elementId: string, coords: { x: number; y: number }) => void;
   positionOverlay?: { x: number; y: number } | null;
 };
 
@@ -28,6 +29,7 @@ export function MediaCanvasWrapper({
   onResizeStart,
   screenToCanvas,
   onElementSizeChange,
+  onElementPositionChange,
   positionOverlay,
 }: MediaCanvasWrapperProps) {
   const imageAspectRatio = useImageAspectRatio(element.imageUrl ?? null);
@@ -132,9 +134,34 @@ export function MediaCanvasWrapper({
             newHeight = minSizePx;
             newWidth = newHeight * imageAspectRatio;
           }
+          
+          // Проверяем, что элемент не выходит за границы канвы после изменения размера
+          // Если выходит, корректируем позицию
+          const halfWidth = newWidth / 2;
+          const halfHeight = newHeight / 2;
+          let adjustedX = element.x;
+          let adjustedY = element.y;
+          
+          if (adjustedX - halfWidth < 0) {
+            adjustedX = halfWidth;
+          } else if (adjustedX + halfWidth > canvasSize.width) {
+            adjustedX = canvasSize.width - halfWidth;
+          }
+          
+          if (adjustedY - halfHeight < 0) {
+            adjustedY = halfHeight;
+          } else if (adjustedY + halfHeight > canvasSize.height) {
+            adjustedY = canvasSize.height - halfHeight;
+          }
 
           setSizeOverlay({ width: newWidth, height: newHeight });
           onElementSizeChange(element.id, { width: newWidth, height: newHeight });
+          
+          // Обновляем позицию, если элемент выходит за границы после изменения размера
+          if (onElementPositionChange && (adjustedX !== element.x || adjustedY !== element.y)) {
+            onElementPositionChange(element.id, { x: adjustedX, y: adjustedY });
+          }
+          
           rafId = null;
         });
       };

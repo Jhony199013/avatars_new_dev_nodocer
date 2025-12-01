@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { safeGetUser } from "@/lib/authUtils";
 import { supabase } from "@/lib/supabaseClient";
 import { Header } from "@/components/ui/Header";
 import { Dashboard } from "./components/Dashboard";
@@ -15,13 +16,17 @@ export default function Home() {
 
   useEffect(() => {
     let isMounted = true;
+    let timeoutId: NodeJS.Timeout | null = null;
 
     const checkAuth = async () => {
       try {
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser();
+        const { user, error } = await safeGetUser();
+        
+        // Очищаем таймаут, так как проверка завершилась
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
         
         if (!isMounted) return;
 
@@ -32,31 +37,48 @@ export default function Home() {
 
         setIsCheckingAuth(false);
       } catch (error) {
+        // Очищаем таймаут при ошибке
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        
         console.error("[Home] Ошибка проверки авторизации:", error);
         if (isMounted) {
           router.push("/login");
         }
       } finally {
-        if (isMounted) {
-          setIsCheckingAuth(false);
+        if (isMounted && timeoutId) {
+          clearTimeout(timeoutId);
         }
       }
     };
 
     // Таймаут на случай зависания
-    const timeoutId = setTimeout(() => {
+    timeoutId = setTimeout(async () => {
       if (isMounted) {
         console.warn("[Home] Таймаут проверки авторизации");
+        // Очищаем сессию перед редиректом
+        try {
+          await supabase.auth.signOut();
+          if (typeof document !== "undefined") {
+            document.cookie = "app-auth=; path=/; max-age=0";
+          }
+        } catch (err) {
+          console.error("[Home] Ошибка при очистке сессии:", err);
+        }
         setIsCheckingAuth(false);
         router.push("/login");
       }
-    }, 5000); // 5 секунд таймаут
+    }, 10000); // Увеличиваем до 10 секунд
 
     checkAuth();
 
     return () => {
       isMounted = false;
-      clearTimeout(timeoutId);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
   }, [router]);
 

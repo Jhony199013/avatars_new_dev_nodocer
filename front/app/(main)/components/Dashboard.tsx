@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { safeGetUser } from "@/lib/authUtils";
 import { AvatarsSection } from "./AvatarsSection";
 import { VoicesSection } from "./VoicesSection";
 import { VideosSection } from "./VideosSection";
@@ -15,10 +16,7 @@ export function Dashboard() {
 
   const checkResources = useCallback(async () => {
     try {
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
+      const { user, error: authError } = await safeGetUser();
 
       if (authError || !user) {
         router.push("/login");

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { safeGetUser } from "@/lib/authUtils";
 import { getPrefetchedAvatars, clearPrefetchCache } from "@/lib/prefetchAvatars";
 
 import { CosmoLoader } from "@/components/ui/CosmoLoader";
@@ -26,9 +27,7 @@ export function AvatarsSection() {
         setIsFetchingAvatars(false);
         clearPrefetchCache();
         
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        const { user } = await safeGetUser();
         
         if (!isMounted) return;
         
@@ -45,9 +44,7 @@ export function AvatarsSection() {
 
       setIsFetchingAvatars(true);
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { user } = await safeGetUser();
 
       if (!isMounted) return;
 

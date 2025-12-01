@@ -43,6 +43,10 @@ const translations = [
     matchers: ["server error", "internal error"],
     message: "Ошибка сервера. Попробуйте позже.",
   },
+  {
+    matchers: ["refresh token", "invalid refresh token", "refresh token not found"],
+    message: "Сессия истекла. Пожалуйста, войдите снова.",
+  },
 ];
 
 export function translateError(message: string) {
@@ -57,6 +61,7 @@ export function translateError(message: string) {
 
   return matched ? matched.message : message;
 }
+
 
 
 

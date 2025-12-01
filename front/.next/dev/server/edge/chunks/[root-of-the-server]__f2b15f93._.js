@@ -23,34 +23,31 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$api$2f$server$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/api/server.js [middleware-edge] (ecmascript) <locals>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/web/exports/index.js [middleware-edge] (ecmascript)");
 ;
-const PROTECTED_ROUTES = [
-    "/",
-    "/avatars",
-    "/voices",
-    "/material"
-];
 const AUTH_COOKIE_NAME = "app-auth";
-function isProtectedRoute(pathname) {
-    // Главная страница должна быть точно "/", а не начинаться с "/"
-    if (pathname === "/") {
-        return true;
-    }
-    // Проверяем защищенные маршруты и их подмаршруты (например, /material/editor)
-    return PROTECTED_ROUTES.some((route)=>route !== "/" && pathname.startsWith(route));
+const LOGIN_ROUTE = "/login";
+function isLoginRoute(pathname) {
+    return pathname === LOGIN_ROUTE;
 }
 function isAuthenticated(request) {
     const cookies = request.cookies.getAll();
-    const hasSupabaseToken = cookies.some((cookie)=>cookie.name.includes("auth-token"));
-    const hasCustomAuthCookie = Boolean(cookies.find((cookie)=>cookie.name === AUTH_COOKIE_NAME)?.value);
+    // Проверяем наличие Supabase токена (обычно это cookie с именем содержащим "auth-token")
+    const supabaseTokenCookie = cookies.find((cookie)=>cookie.name.includes("auth-token"));
+    const hasSupabaseToken = Boolean(supabaseTokenCookie?.value && supabaseTokenCookie.value.trim() !== "");
+    // Проверяем наличие кастомной auth cookie
+    const customAuthCookie = cookies.find((cookie)=>cookie.name === AUTH_COOKIE_NAME);
+    const hasCustomAuthCookie = Boolean(customAuthCookie?.value && customAuthCookie.value.trim() !== "");
+    // Пользователь авторизован только если есть хотя бы один валидный токен
     return hasSupabaseToken || hasCustomAuthCookie;
 }
 async function middleware(request) {
     const { pathname } = request.nextUrl;
     const authenticated = isAuthenticated(request);
-    if (!authenticated && isProtectedRoute(pathname)) {
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL("/login", request.url));
+    // Если пользователь не авторизован и пытается зайти на любую страницу кроме логина
+    if (!authenticated && !isLoginRoute(pathname)) {
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL(LOGIN_ROUTE, request.url));
     }
-    if (authenticated && pathname === "/login") {
+    // Если пользователь авторизован и пытается зайти на страницу логина
+    if (authenticated && isLoginRoute(pathname)) {
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL("/", request.url));
     }
     return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].next();

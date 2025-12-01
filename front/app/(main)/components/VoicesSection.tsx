@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { safeGetUser } from "@/lib/authUtils";
 
 import { CosmoLoader } from "@/components/ui/CosmoLoader";
 import { VoiceGrid } from "@/app/voices/components/VoiceGrid";
@@ -26,11 +27,9 @@ export function VoicesSection() {
   const fetchVoices = useCallback(async () => {
     setIsFetchingVoices(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await safeGetUser();
 
-    if (!user) {
+    if (authError || !user) {
       router.push("/login");
       setCurrentUserId(null);
       setVoices([]);

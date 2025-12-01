@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { safeGetUser } from "@/lib/authUtils";
 
 import { Header } from "@/components/ui/Header";
 import { VideosList } from "./components/VideosList";
@@ -12,10 +12,8 @@ export default function MaterialPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
+      const { user, error } = await safeGetUser();
+      if (error || !user) {
         router.push("/login");
       }
     };

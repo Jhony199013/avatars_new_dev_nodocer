@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { safeGetUser } from "@/lib/authUtils";
 import { getPrefetchedAvatars, clearPrefetchCache } from "@/lib/prefetchAvatars";
 
 import { EmptyState } from "@/components/EmptyState";
@@ -31,15 +32,13 @@ export default function AvatarsPage() {
         setIsFetchingAvatars(false);
         clearPrefetchCache(); // Очищаем кеш после использования
         
-        // Получаем userId для установки
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        // Получаем userId для установки с безопасной проверкой авторизации
+        const { user, error: authError } = await safeGetUser();
         
         if (!isMounted) return;
         
-      if (!user) {
-        router.push("/login");
+        if (authError || !user) {
+          router.push("/login");
           setCurrentUserId(null);
           setPhotoAvatars([]);
           return;
@@ -49,24 +48,22 @@ export default function AvatarsPage() {
         return;
       }
 
-    setIsFetchingAvatars(true);
+      setIsFetchingAvatars(true);
 
-      // Получаем пользователя
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      // Получаем пользователя с безопасной проверкой авторизации
+      const { user, error: authError } = await safeGetUser();
 
       if (!isMounted) return;
 
-    if (!user) {
+      if (authError || !user) {
         router.push("/login");
-      setCurrentUserId(null);
-      setPhotoAvatars([]);
-      setIsFetchingAvatars(false);
-      return;
-    }
+        setCurrentUserId(null);
+        setPhotoAvatars([]);
+        setIsFetchingAvatars(false);
+        return;
+      }
 
-    setCurrentUserId(user.id);
+      setCurrentUserId(user.id);
 
       // Загружаем аватары
       const { data, error } = await supabase

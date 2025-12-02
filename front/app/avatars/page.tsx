@@ -74,9 +74,7 @@ export default function AvatarsPage() {
 
       if (!isMounted) return;
 
-      if (error) {
-        console.error("[avatars] Ошибка загрузки аватаров:", error);
-      } else {
+      if (!error) {
         setPhotoAvatars(data ?? []);
       }
       setIsFetchingAvatars(false);
@@ -101,9 +99,7 @@ export default function AvatarsPage() {
       .eq("uid", currentUserId)
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("[avatars] Ошибка загрузки аватаров:", error);
-    } else {
+    if (!error) {
       setPhotoAvatars(data ?? []);
     }
   }, [currentUserId]);

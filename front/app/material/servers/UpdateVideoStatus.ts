@@ -42,7 +42,6 @@ export async function UpdateVideoStatusToError(uid: string): Promise<UpdateVideo
       .lt("created_at", threeHoursAgo);
 
     if (error) {
-      console.error("[UpdateVideoStatusToError] Ошибка обновления статуса:", error);
       return { success: false, error: error.message };
     }
 
@@ -50,7 +49,6 @@ export async function UpdateVideoStatusToError(uid: string): Promise<UpdateVideo
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Неизвестная ошибка сервера";
-    console.error("[UpdateVideoStatusToError]", message);
     return { success: false, error: message };
   }
 }

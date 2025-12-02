@@ -28,6 +28,9 @@ const LOGIN_ROUTE = "/login";
 function isLoginRoute(pathname) {
     return pathname === LOGIN_ROUTE;
 }
+function isApiRoute(pathname) {
+    return pathname.startsWith("/api/");
+}
 function isAuthenticated(request) {
     // Проверяем только нашу кастомную auth cookie
     // Это единственный надежный индикатор авторизации, который мы контролируем
@@ -37,6 +40,10 @@ function isAuthenticated(request) {
 async function middleware(request) {
     const { pathname } = request.nextUrl;
     const authenticated = isAuthenticated(request);
+    // Пропускаем все API роуты без проверки авторизации
+    if (isApiRoute(pathname)) {
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].next();
+    }
     // Если пользователь не авторизован и пытается зайти на любую страницу кроме логина
     if (!authenticated && !isLoginRoute(pathname)) {
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL(LOGIN_ROUTE, request.url));

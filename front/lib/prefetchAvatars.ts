@@ -56,7 +56,6 @@ export async function prefetchAvatarsData(): Promise<void> {
     }
   } catch (error) {
     // Игнорируем ошибки prefetch - это не критично
-    console.debug("[prefetch] Ошибка prefetch аватаров:", error);
   }
 }
 

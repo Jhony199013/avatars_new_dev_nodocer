@@ -35,7 +35,6 @@ export function VideoErrorBlock({
         setIsDeleting(false);
       }
     } catch (error) {
-      console.error("[VideoErrorBlock] Ошибка удаления:", error);
       alert("Произошла ошибка при удалении видео");
       setIsDeleting(false);
     }

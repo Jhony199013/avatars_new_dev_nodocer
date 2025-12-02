@@ -22,7 +22,7 @@ export function LogoutModal({ isOpen, onClose }: LogoutModalProps) {
       router.push("/login");
       onClose();
     } catch (error) {
-      console.error("Ошибка при выходе:", error);
+      // Игнорируем ошибки при выходе
     } finally {
       setIsLoggingOut(false);
     }

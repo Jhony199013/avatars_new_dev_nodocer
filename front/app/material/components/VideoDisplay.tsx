@@ -101,7 +101,6 @@ export function VideoDisplay({
       setIsEditModalOpen(false);
       await onUpdated?.();
     } catch (error) {
-      console.error("[VideoDisplay] Ошибка редактирования:", error);
       alert(
         `Ошибка при редактировании: ${
           error instanceof Error ? error.message : "Неизвестная ошибка"
@@ -143,7 +142,6 @@ export function VideoDisplay({
       setIsDeleteModalOpen(false);
       await onDeleted?.();
     } catch (error) {
-      console.error("[VideoDisplay] Ошибка удаления:", error);
       alert(
         `Ошибка при удалении: ${
           error instanceof Error ? error.message : "Неизвестная ошибка"

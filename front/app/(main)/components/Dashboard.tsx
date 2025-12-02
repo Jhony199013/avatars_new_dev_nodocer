@@ -43,7 +43,6 @@ export function Dashboard() {
       setHasVoices(validVoices.length > 0);
       setIsChecking(false);
     } catch (error) {
-      console.error("[Dashboard] Ошибка проверки ресурсов:", error);
       router.push("/login");
     }
   }, [router]);

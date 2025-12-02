@@ -65,9 +65,7 @@ export function MaterialEditor() {
       .eq("status", "done")
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("[MaterialEditor] Ошибка загрузки аватаров:", error);
-    } else {
+    if (!error) {
       setAvatars(
         (data ?? []).map((avatar) => ({
           id: avatar.id ?? "",
@@ -95,9 +93,7 @@ export function MaterialEditor() {
       .eq("uid", user.id)
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("[MaterialEditor] Ошибка загрузки голосов:", error);
-    } else {
+    if (!error) {
       setVoices(
         (data ?? [])
           .filter((voice) => voice.url && voice.name)
@@ -129,9 +125,7 @@ export function MaterialEditor() {
         .eq("status", "done")
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("[MaterialEditor] Ошибка загрузки аватаров:", error);
-      } else {
+      if (!error) {
         setAvatars(
           (data ?? []).map((avatar) => ({
             id: avatar.id ?? "",
@@ -163,9 +157,7 @@ export function MaterialEditor() {
         .eq("uid", user.id)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("[MaterialEditor] Ошибка загрузки голосов:", error);
-      } else {
+      if (!error) {
         setVoices(
           (data ?? [])
             .filter((voice) => voice.url && voice.name)
@@ -198,9 +190,7 @@ export function MaterialEditor() {
         .select("id")
         .eq("uid", user.id);
 
-      if (error) {
-        console.error("[MaterialEditor] Ошибка загрузки количества видео:", error);
-      } else {
+      if (!error) {
         setVideoCount(data?.length ?? 0);
       }
     };
@@ -511,7 +501,6 @@ export function MaterialEditor() {
       setMediaAssets((prev) => [...prev, newAsset]);
       addAssetToScene(activeScene.id, newAsset);
     } catch (error) {
-      console.error("[MaterialEditor] Ошибка при добавлении медиа:", error);
       alert("Произошла ошибка при загрузке файла");
     } finally {
       setIsUploadingMedia(false);
@@ -585,8 +574,8 @@ export function MaterialEditor() {
 
     // Удаляем файл из S3 параллельно (без await)
     if (s3KeyToDelete) {
-      DeleteMedia(s3KeyToDelete).catch((error) => {
-        console.error("[MaterialEditor] Ошибка при удалении файла из S3:", error);
+      DeleteMedia(s3KeyToDelete).catch(() => {
+        // Игнорируем ошибки удаления из S3
       });
     }
   };
@@ -701,16 +690,14 @@ export function MaterialEditor() {
         const height = img.naturalHeight || img.height;
         
         if (width > 0 && height > 0) {
-          console.log(`Размеры изображения получены: ${imageUrl} - ${width}x${height}`);
           resolve({ width, height });
         } else {
           reject(new Error(`Неверные размеры изображения: ${imageUrl}`));
         }
       };
       
-      img.onerror = (error) => {
+      img.onerror = () => {
         clearTimeout(timeout);
-        console.error(`Ошибка загрузки изображения: ${imageUrl}`, error);
         reject(new Error(`Не удалось загрузить изображение: ${imageUrl}`));
       };
       
@@ -738,10 +725,8 @@ export function MaterialEditor() {
     if (scene.avatarId && scene.avatarPosition && scene.avatarSize) {
       const avatar = avatars.find((a) => a.id === scene.avatarId);
       if (avatar && avatar.photo) {
-        console.log(`Загрузка размеров аватара для слайда ${slideNumber}: ${avatar.photo}`);
         try {
           const originalDimensions = await getImageDimensions(avatar.photo);
-          console.log(`Размеры аватара получены для слайда ${slideNumber}:`, originalDimensions);
           slideData.elements.push({
             media_type: "avatar",
             type: "avatar",
@@ -763,8 +748,6 @@ export function MaterialEditor() {
             hey_gen_id: avatar.hey_gen_id,
           });
         } catch (error) {
-          console.error(`Ошибка при получении размеров аватара для слайда ${slideNumber}:`, error);
-          console.error(`URL аватара: ${avatar.photo}`);
           // Добавляем аватар без оригинальных размеров
           slideData.elements.push({
             media_type: "avatar",
@@ -800,14 +783,11 @@ export function MaterialEditor() {
         }
 
         if (!mediaImageUrl) {
-          console.warn(`Медиа элемент ${element.id} не имеет URL, пропускаем`);
           continue;
         }
 
-        console.log(`Загрузка размеров медиа для слайда ${slideNumber}: ${mediaImageUrl}`);
         try {
           const originalDimensions = await getImageDimensions(mediaImageUrl);
-          console.log(`Размеры медиа получены для слайда ${slideNumber}:`, originalDimensions);
           slideData.elements.push({
             media_type: "media",
             type: "media",
@@ -830,8 +810,6 @@ export function MaterialEditor() {
             crop: element.crop || null,
           });
         } catch (error) {
-          console.error(`Ошибка при получении размеров медиа для слайда ${slideNumber}:`, error);
-          console.error(`URL медиа: ${mediaImageUrl}`);
           // Добавляем медиа без оригинальных размеров
           slideData.elements.push({
             media_type: "media",
@@ -919,21 +897,11 @@ export function MaterialEditor() {
 
       // Сохраняем данные в таблицу video_temp
       const saveResult = await CreateVideoTemp(videoTitleWithUuid, slidesData, userUuid);
-      if (!saveResult.success) {
-        console.error("[MaterialEditor] Ошибка при сохранении в video_temp:", saveResult.error);
-        // Не прерываем процесс, просто логируем ошибку
-      } else {
-        console.log("[MaterialEditor] Данные успешно сохранены в video_temp, ID:", saveResult.id);
-      }
+      // Не прерываем процесс при ошибках сохранения
 
       // Создаем запись в таблице videos со статусом "generate"
       const videoResult = await CreateVideo(userUuid, videoTitleWithUuid);
-      if (!videoResult.success) {
-        console.error("[MaterialEditor] Ошибка при создании записи в videos:", videoResult.error);
-        // Не прерываем процесс, просто логируем ошибку
-      } else {
-        console.log("[MaterialEditor] Запись успешно создана в videos, ID:", videoResult.id);
-      }
+      // Не прерываем процесс при ошибках создания записи
 
       // Отправляем вебхук
       const response = await fetch("https://rueleven.ru/webhook/2c6c697f-78cd-4eb2-bf01-2f00827b965d", {
@@ -952,8 +920,6 @@ export function MaterialEditor() {
       if (!response.ok) {
         throw new Error(`Ошибка HTTP: ${response.status}`);
       }
-
-      console.log("Вебхук успешно отправлен:", slidesData);
       
       // Обновляем счетчик видео после успешной генерации
       if (videoCount !== null) {
@@ -963,7 +929,6 @@ export function MaterialEditor() {
       // Перенаправляем на страницу material после успешной генерации
       router.push("/material");
     } catch (error) {
-      console.error("Ошибка при отправке вебхука:", error);
       alert("Произошла ошибка при отправке данных. Проверьте консоль для подробностей.");
       setIsGenerating(false);
     }
@@ -1023,9 +988,8 @@ export function MaterialEditor() {
                     uuid: userUuid,
                   }),
                 });
-                console.log(`Вебхук отправлен для слайда ${slideNumber}`);
               } catch (error) {
-                console.error(`Ошибка при отправке вебхука для слайда ${slideNumber}:`, error);
+                // Игнорируем ошибки отправки вебхука для отдельных слайдов
               }
             }
 

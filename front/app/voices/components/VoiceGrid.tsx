@@ -80,7 +80,6 @@ export function VoiceGrid({
   const validVoices = voices.filter((voice) => voice.url && voice.name);
 
   if (validVoices.length === 0) {
-    console.warn("[VoiceGrid] Нет валидных голосов для отображения");
     return null;
   }
 
@@ -137,7 +136,6 @@ export function VoiceGrid({
       setVoiceToDelete(null);
       await onVoicesChanged?.();
     } catch (error) {
-      console.error("[voices] Ошибка удаления:", error);
       alert(
         `Ошибка при удалении: ${
           error instanceof Error ? error.message : "Неизвестная ошибка"
@@ -170,7 +168,6 @@ export function VoiceGrid({
       setVoiceToEdit(null);
       await onVoicesChanged?.();
     } catch (error) {
-      console.error("[voices] Ошибка редактирования:", error);
       alert(
         `Ошибка при редактировании: ${
           error instanceof Error ? error.message : "Неизвестная ошибка"

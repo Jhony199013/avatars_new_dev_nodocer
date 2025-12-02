@@ -68,7 +68,6 @@ export async function GET(request: NextRequest) {
       cache: "no-store",
     });
   } catch (error) {
-    console.error("Не удалось запросить аудио у S3:", error);
     return NextResponse.json(
       { error: "Не удалось загрузить аудио" },
       { status: 502 },
@@ -92,6 +91,8 @@ export async function GET(request: NextRequest) {
     headers,
   });
 }
+
+
 
 
 

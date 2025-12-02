@@ -36,7 +36,6 @@ export function VideosSection({
     if (result.success) {
       setVideos(result.videos);
     } else {
-      console.error("[VideosSection] Ошибка загрузки видео:", result.error);
       setVideos([]);
     }
   }, []);
@@ -60,7 +59,6 @@ export function VideosSection({
       if (result.success) {
         setVideos(result.videos);
       } else {
-        console.error("[VideosSection] Ошибка загрузки видео:", result.error);
         setVideos([]);
       }
       setIsInitialLoading(false);
@@ -114,7 +112,6 @@ export function VideosSection({
         router.push("/material/editor");
       }
     } catch (error) {
-      console.error("[VideosSection] Ошибка проверки ресурсов:", error);
       // В случае ошибки открываем визард для безопасности
       setIsWizardOpen(true);
     }

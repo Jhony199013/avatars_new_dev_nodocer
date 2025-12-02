@@ -74,7 +74,6 @@ export async function CreateVideoTemp(
       .single();
 
     if (error) {
-      console.error("[CreateVideoTemp] Ошибка при создании записи:", error);
       return { success: false, error: error.message };
     }
 
@@ -86,7 +85,6 @@ export async function CreateVideoTemp(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Неизвестная ошибка сервера";
-    console.error("[CreateVideoTemp]", message);
     return { success: false, error: message };
   }
 }
@@ -122,7 +120,6 @@ export async function CreateVideo(
       .single();
 
     if (error) {
-      console.error("[CreateVideo] Ошибка при создании записи:", error);
       return { success: false, error: error.message };
     }
 
@@ -134,10 +131,11 @@ export async function CreateVideo(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Неизвестная ошибка сервера";
-    console.error("[CreateVideo]", message);
     return { success: false, error: message };
   }
 }
+
+
 
 
 

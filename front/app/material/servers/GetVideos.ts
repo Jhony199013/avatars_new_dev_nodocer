@@ -58,7 +58,6 @@ export async function GetVideos(uid: string): Promise<GetVideosResult> {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("[GetVideos] Ошибка при получении видео:", error);
       return { success: false, error: error.message };
     }
 
@@ -66,7 +65,6 @@ export async function GetVideos(uid: string): Promise<GetVideosResult> {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Неизвестная ошибка сервера";
-    console.error("[GetVideos]", message);
     return { success: false, error: message };
   }
 }

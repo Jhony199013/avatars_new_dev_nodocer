@@ -23,7 +23,6 @@ export function VideosList() {
     if (result.success) {
       setVideos(result.videos);
     } else {
-      console.error("[VideosList] Ошибка загрузки видео:", result.error);
       setVideos([]);
     }
   }, []);
@@ -47,7 +46,6 @@ export function VideosList() {
       if (result.success) {
         setVideos(result.videos);
       } else {
-        console.error("[VideosList] Ошибка загрузки видео:", result.error);
         setVideos([]);
       }
       setIsInitialLoading(false);

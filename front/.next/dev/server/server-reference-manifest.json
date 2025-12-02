@@ -1,26 +1,33 @@
 {
   "node": {
-    "40a437d28660f72a9b0c3e3fce0d1d42903d5d6fd5": {
+    "40cd6299375834d156b90e590d5d7df8fc8ed2c79b": {
       "workers": {
         "app/(main)/page": {
           "moduleId": "[project]/.next-internal/server/app/(main)/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/material/servers/GetVideos.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/avatars/servers/DeletePhotoAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/avatars/servers/UpdateAvatarName.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/app/voices/servers/DeleteVoice.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/app/voices/servers/UpdateVoice.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/app/material/servers/DeleteVideo.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/app/material/servers/UpdateVideoTitle.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
-          "exportedName": "GetVideos",
-          "filename": "app/material/servers/GetVideos.ts"
+          "exportedName": "UploadAvatar",
+          "filename": "app/avatars/servers/UploadAvatar.ts"
         },
-        "app/material/page": {
-          "moduleId": "[project]/.next-internal/server/app/material/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/material/servers/GetVideos.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/material/servers/DeleteVideo.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/material/servers/UpdateVideoTitle.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+        "app/avatars/page": {
+          "moduleId": "[project]/.next-internal/server/app/avatars/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/avatars/servers/DeletePhotoAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/avatars/servers/UpdateAvatarName.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
-          "exportedName": "GetVideos",
-          "filename": "app/material/servers/GetVideos.ts"
+          "exportedName": "UploadAvatar",
+          "filename": "app/avatars/servers/UploadAvatar.ts"
+        },
+        "app/material/editor/page": {
+          "moduleId": "[project]/.next-internal/server/app/material/editor/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/material/editor/servers/CreateVideoRecord.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/material/editor/servers/UploadMedia.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/material/editor/servers/DeleteMedia.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "UploadAvatar",
+          "filename": "app/avatars/servers/UploadAvatar.ts"
         }
       },
       "layer": {
         "app/(main)/page": "action-browser",
-        "app/material/page": "action-browser"
+        "app/avatars/page": "action-browser",
+        "app/material/editor/page": "action-browser"
       },
-      "filename": "app/material/servers/GetVideos.ts",
-      "exportedName": "GetVideos"
+      "filename": "app/avatars/servers/UploadAvatar.ts",
+      "exportedName": "UploadAvatar"
     },
     "404ef6fa38aced2d34bba744ff0fb1ae23c6121202": {
       "workers": {
@@ -65,6 +72,28 @@
       },
       "filename": "app/avatars/servers/UpdateAvatarName.ts",
       "exportedName": "UpdateAvatarName"
+    },
+    "40a437d28660f72a9b0c3e3fce0d1d42903d5d6fd5": {
+      "workers": {
+        "app/(main)/page": {
+          "moduleId": "[project]/.next-internal/server/app/(main)/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/material/servers/GetVideos.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/avatars/servers/DeletePhotoAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/avatars/servers/UpdateAvatarName.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/app/voices/servers/DeleteVoice.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/app/voices/servers/UpdateVoice.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/app/material/servers/DeleteVideo.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/app/material/servers/UpdateVideoTitle.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "GetVideos",
+          "filename": "app/material/servers/GetVideos.ts"
+        },
+        "app/material/page": {
+          "moduleId": "[project]/.next-internal/server/app/material/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/material/servers/GetVideos.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/material/servers/DeleteVideo.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/material/servers/UpdateVideoTitle.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "GetVideos",
+          "filename": "app/material/servers/GetVideos.ts"
+        }
+      },
+      "layer": {
+        "app/(main)/page": "action-browser",
+        "app/material/page": "action-browser"
+      },
+      "filename": "app/material/servers/GetVideos.ts",
+      "exportedName": "GetVideos"
     },
     "40283b640ad833f930e378e3009dbbd29e474a640a": {
       "workers": {
@@ -131,35 +160,6 @@
       },
       "filename": "app/material/servers/DeleteVideo.ts",
       "exportedName": "DeleteVideo"
-    },
-    "40cd6299375834d156b90e590d5d7df8fc8ed2c79b": {
-      "workers": {
-        "app/(main)/page": {
-          "moduleId": "[project]/.next-internal/server/app/(main)/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/material/servers/GetVideos.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/avatars/servers/DeletePhotoAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/avatars/servers/UpdateAvatarName.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/app/voices/servers/DeleteVoice.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/app/voices/servers/UpdateVoice.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/app/material/servers/DeleteVideo.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/app/material/servers/UpdateVideoTitle.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "UploadAvatar",
-          "filename": "app/avatars/servers/UploadAvatar.ts"
-        },
-        "app/avatars/page": {
-          "moduleId": "[project]/.next-internal/server/app/avatars/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/avatars/servers/DeletePhotoAvatar.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/avatars/servers/UpdateAvatarName.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "UploadAvatar",
-          "filename": "app/avatars/servers/UploadAvatar.ts"
-        },
-        "app/material/editor/page": {
-          "moduleId": "[project]/.next-internal/server/app/material/editor/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/material/editor/servers/CreateVideoRecord.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/material/editor/servers/UploadMedia.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/app/material/editor/servers/DeleteMedia.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/app/avatars/servers/UploadAvatar.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "UploadAvatar",
-          "filename": "app/avatars/servers/UploadAvatar.ts"
-        }
-      },
-      "layer": {
-        "app/(main)/page": "action-browser",
-        "app/avatars/page": "action-browser",
-        "app/material/editor/page": "action-browser"
-      },
-      "filename": "app/avatars/servers/UploadAvatar.ts",
-      "exportedName": "UploadAvatar"
     },
     "408a5a2f1a0a6ab3b5027c3b3667ec26e948fb97c3": {
       "workers": {

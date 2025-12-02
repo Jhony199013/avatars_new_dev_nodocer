@@ -186,7 +186,6 @@ export function EditorSidebar({
 
     const handleError = (event: Event | string) => {
       if (typeof event === "string") {
-        console.error("Ошибка загрузки аудио:", event);
         setLoadingSceneId(null);
         setPlayingSceneId((current) => (current === sceneId ? null : current));
         return;
@@ -197,13 +196,8 @@ export function EditorSidebar({
       if (!hasSrcAttr || hasSrcAttr === "") {
         return;
       }
-      console.error("Ошибка загрузки аудио:", event);
       setLoadingSceneId(null);
       setPlayingSceneId((current) => (current === sceneId ? null : current));
-      if (audioElement.error) {
-        console.error("Код ошибки:", audioElement.error.code);
-        console.error("Сообщение:", audioElement.error.message);
-      }
     };
 
     audio.onplay = handlePlay;
@@ -236,7 +230,6 @@ export function EditorSidebar({
       setLoadingSceneId(null);
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
-        console.warn("Воспроизведение прервано из-за смены источника");
         return;
       }
       throw error;
@@ -338,11 +331,8 @@ export function EditorSidebar({
       }
 
       if (!success) {
-        console.error("Неожиданный ответ вебхука, ожидали success=true:", json);
         throw new Error("Вебхук не вернул success=true, аудио может быть не готово");
       }
-
-      console.log("Вебхук успешно завершил генерацию для слайда:", slideNumber);
 
       // Сохраняем отправленный текст (используется для определения, изменился ли текст)
       lastSentTexts.current[sceneId] = currentText;
@@ -350,13 +340,9 @@ export function EditorSidebar({
       // Если текст изменился, добавляем cache-buster к URL, чтобы браузер не брал старое аудио из кеша
       const audioUrl = textChanged ? `${baseAudioUrl}&bust=${Date.now()}` : baseAudioUrl;
 
-      console.log("Воспроизведение аудио по URL:", audioUrl);
-
       await playSceneAudio(sceneId, audioUrl);
-      console.log("Воспроизведение начато");
     } catch (error) {
       setLoadingSceneId(null);
-      console.error("Ошибка при отправке вебхука или воспроизведении:", error);
       alert(error instanceof Error ? error.message : "Не удалось отправить вебхук или воспроизвести аудио");
     }
   };

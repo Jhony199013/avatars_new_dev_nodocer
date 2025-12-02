@@ -67,7 +67,6 @@ async function DeleteVoice({ uid, voiceId }) {
         };
     } catch (error) {
         const message = error instanceof Error ? error.message : "Неизвестная ошибка";
-        console.error("[DeleteVoice]", message);
         return {
             success: false,
             error: message
@@ -134,7 +133,6 @@ async function UpdateVoice({ uid, voiceId, name, description }) {
         };
     } catch (error) {
         const message = error instanceof Error ? error.message : "Неизвестная ошибка";
-        console.error("[UpdateVoice]", message);
         return {
             success: false,
             error: message

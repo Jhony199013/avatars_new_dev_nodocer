@@ -61,7 +61,6 @@ function extractS3KeyFromUrl(url: string): string | null {
     
     return null;
   } catch (error) {
-    console.error("[DeleteVideo] Ошибка парсинга URL:", error);
     return null;
   }
 }
@@ -101,7 +100,6 @@ export async function DeleteVideo(
       .single();
 
     if (fetchError) {
-      console.error("[DeleteVideo] Ошибка получения видео из БД:", fetchError);
       return { success: false, error: fetchError.message };
     }
 
@@ -118,18 +116,9 @@ export async function DeleteVideo(
             Key: s3Key,
           });
           await s3Client.send(command);
-          console.log("[DeleteVideo] Видео успешно удалено из S3:", s3Key);
         } catch (s3Error) {
-          // Логируем ошибку, но продолжаем удаление записи из БД
-          console.error("[DeleteVideo] Ошибка удаления видео из S3:", s3Error);
-          // Если файл не найден - это не критично, возможно он уже был удален
-          const errorMessage = s3Error instanceof Error ? s3Error.message : String(s3Error);
-          if (!errorMessage.includes("NoSuchKey") && !errorMessage.includes("404")) {
-            console.warn("[DeleteVideo] Файл не найден в S3, возможно уже удален:", s3Key);
-          }
+          // Игнорируем ошибки удаления из S3, продолжаем удаление записи из БД
         }
-      } else {
-        console.warn("[DeleteVideo] Не удалось извлечь S3 ключ из URL:", urlToDelete);
       }
     }
 
@@ -141,7 +130,6 @@ export async function DeleteVideo(
       .eq("uid", uid.trim());
 
     if (error) {
-      console.error("[DeleteVideo] Ошибка удаления видео из БД:", error);
       return { success: false, error: error.message };
     }
 
@@ -149,7 +137,6 @@ export async function DeleteVideo(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Неизвестная ошибка сервера";
-    console.error("[DeleteVideo]", message);
     return { success: false, error: message };
   }
 }

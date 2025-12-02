@@ -92,7 +92,6 @@ export async function DeletePhotoAvatar({
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Неизвестная ошибка";
-    console.error("[DeletePhotoAvatar]", message);
     return { success: false, error: message };
   }
 }

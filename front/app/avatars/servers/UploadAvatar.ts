@@ -168,7 +168,6 @@ export async function UploadAvatar(formData: FormData): Promise<UploadAvatarResu
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Неизвестная ошибка сервера";
-    console.error("[UploadAvatar]", message);
     return { success: false, error: message };
   }
 }

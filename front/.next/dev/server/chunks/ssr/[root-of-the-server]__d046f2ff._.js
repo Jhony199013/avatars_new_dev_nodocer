@@ -128,7 +128,6 @@ async function UploadAvatar(formData) {
         };
     } catch (error) {
         const message = error instanceof Error ? error.message : "Неизвестная ошибка сервера";
-        console.error("[UploadAvatar]", message);
         return {
             success: false,
             error: message
@@ -212,7 +211,6 @@ async function DeletePhotoAvatar({ uid, recordId, groupId, imageKey }) {
         };
     } catch (error) {
         const message = error instanceof Error ? error.message : "Неизвестная ошибка";
-        console.error("[DeletePhotoAvatar]", message);
         return {
             success: false,
             error: message
@@ -277,7 +275,6 @@ async function UpdateAvatarName({ uid, recordId, newName }) {
         };
     } catch (error) {
         const message = error instanceof Error ? error.message : "Неизвестная ошибка";
-        console.error("[UpdateAvatarName]", message);
         return {
             success: false,
             error: message

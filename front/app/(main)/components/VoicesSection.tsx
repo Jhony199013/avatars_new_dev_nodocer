@@ -46,12 +46,9 @@ export function VoicesSection() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("[voices] Ошибка загрузки голосов:", error);
       setVoices([]);
     } else {
-      console.log("[voices] Загружено голосов:", data?.length ?? 0, data);
       const validVoices = (data ?? []).filter((voice) => voice.url && voice.name);
-      console.log("[voices] Валидных голосов:", validVoices.length);
       setVoices(validVoices);
     }
     setIsFetchingVoices(false);

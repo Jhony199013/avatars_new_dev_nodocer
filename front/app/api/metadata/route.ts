@@ -45,7 +45,6 @@ export async function POST(request: NextRequest) {
       });
 
     if (error) {
-      console.error("[POST /api/metadata] Ошибка при сохранении:", error);
       return NextResponse.json(
         { success: false, error: error.message || "Ошибка при сохранении данных" },
         { status: 500 },
@@ -56,7 +55,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Неизвестная ошибка сервера";
-    console.error("[POST /api/metadata] Критическая ошибка:", message, error);
     return NextResponse.json(
       { success: false, error: message },
       { status: 500 },

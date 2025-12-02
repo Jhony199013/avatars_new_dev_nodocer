@@ -66,7 +66,6 @@ export async function UpdateVoice({
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Неизвестная ошибка";
-    console.error("[UpdateVoice]", message);
     return { success: false, error: message };
   }
 }

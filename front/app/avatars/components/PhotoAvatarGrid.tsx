@@ -111,7 +111,6 @@ export function PhotoAvatarGrid({
       setAvatarToEdit(null);
       await onAvatarDeleted?.();
     } catch (error) {
-      console.error("[avatars] Ошибка редактирования:", error);
       alert(
         `Ошибка при редактировании: ${
           error instanceof Error ? error.message : "Неизвестная ошибка"
@@ -146,7 +145,6 @@ export function PhotoAvatarGrid({
       setAvatarToDelete(null);
       await onAvatarDeleted?.();
     } catch (error) {
-      console.error("[avatars] Ошибка удаления:", error);
       alert(
         `Ошибка при удалении: ${
           error instanceof Error ? error.message : "Неизвестная ошибка"

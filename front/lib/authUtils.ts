@@ -68,7 +68,6 @@ export async function safeGetUser() {
 
     // Если ошибка связана с авторизацией (удаленный пользователь, невалидная сессия и т.д.), очищаем сессию
     if (error && isAuthError(error)) {
-      console.warn("[authUtils] Ошибка авторизации, очищаем сессию:", error.message || error);
       await supabase.auth.signOut();
       // Очищаем cookie авторизации (только в браузере)
       if (typeof document !== "undefined") {
@@ -79,7 +78,6 @@ export async function safeGetUser() {
 
     // Если пользователь не найден, но ошибки нет - тоже очищаем сессию на всякий случай
     if (!user && !error) {
-      console.warn("[authUtils] Пользователь не найден, очищаем сессию");
       await supabase.auth.signOut();
       if (typeof document !== "undefined") {
         document.cookie = "app-auth=; path=/; max-age=0";
@@ -94,21 +92,19 @@ export async function safeGetUser() {
     
     // Если это таймаут, очищаем сессию и возвращаем null
     if (errorMessage.includes("Таймаут") || errorMessage.includes("timeout")) {
-      console.warn("[authUtils] Таймаут получения пользователя, очищаем сессию");
       try {
         await supabase.auth.signOut();
         if (typeof document !== "undefined") {
           document.cookie = "app-auth=; path=/; max-age=0";
         }
       } catch (signOutErr) {
-        console.error("[authUtils] Ошибка при очистке сессии:", signOutErr);
+        // Игнорируем ошибки при очистке сессии
       }
       return { user: null, error: null };
     }
     
     // Обрабатываем другие ошибки авторизации
     if (isAuthError(err)) {
-      console.warn("[authUtils] Ошибка авторизации, очищаем сессию:", err);
       await supabase.auth.signOut();
       if (typeof document !== "undefined") {
         document.cookie = "app-auth=; path=/; max-age=0";
@@ -116,7 +112,6 @@ export async function safeGetUser() {
       return { user: null, error: null };
     }
     
-    console.error("[authUtils] Ошибка при получении пользователя:", err);
     return { user: null, error: err };
   }
 }

@@ -47,7 +47,6 @@ export default function Home() {
           timeoutId = null;
         }
         
-        console.error("[Home] Ошибка проверки авторизации:", error);
         if (isMounted) {
           // Очищаем куку авторизации перед редиректом на логин
           if (typeof document !== "undefined") {
@@ -65,7 +64,6 @@ export default function Home() {
     // Таймаут на случай зависания
     timeoutId = setTimeout(async () => {
       if (isMounted) {
-        console.warn("[Home] Таймаут проверки авторизации");
         // Очищаем сессию перед редиректом
         try {
           await supabase.auth.signOut();
@@ -73,7 +71,7 @@ export default function Home() {
             document.cookie = "app-auth=; path=/; max-age=0";
           }
         } catch (err) {
-          console.error("[Home] Ошибка при очистке сессии:", err);
+          // Игнорируем ошибки при очистке сессии
         }
         setIsCheckingAuth(false);
         router.push("/login");

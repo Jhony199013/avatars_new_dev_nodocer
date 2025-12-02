@@ -7,6 +7,10 @@ function isLoginRoute(pathname: string) {
   return pathname === LOGIN_ROUTE;
 }
 
+function isApiRoute(pathname: string) {
+  return pathname.startsWith("/api/");
+}
+
 function isAuthenticated(request: NextRequest) {
   // Проверяем только нашу кастомную auth cookie
   // Это единственный надежный индикатор авторизации, который мы контролируем
@@ -20,6 +24,11 @@ function isAuthenticated(request: NextRequest) {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const authenticated = isAuthenticated(request);
+
+  // Пропускаем все API роуты без проверки авторизации
+  if (isApiRoute(pathname)) {
+    return NextResponse.next();
+  }
 
   // Если пользователь не авторизован и пытается зайти на любую страницу кроме логина
   if (!authenticated && !isLoginRoute(pathname)) {

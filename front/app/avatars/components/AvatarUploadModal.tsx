@@ -173,18 +173,15 @@ export function AvatarUploadModal({
   const waitForAvatarCompletion = useCallback(
     async (recordId?: string | null, initialStatus?: "done" | "error") => {
       if (!recordId) {
-        console.warn("[avatars] Нет ID записи для проверки статуса");
         return true;
       }
 
       // Если статус уже done сразу после создания, не ждём
       if (initialStatus === "done") {
-        console.log("[avatars] Статус уже 'done', не требуется ожидание");
         return true;
       }
 
       if (initialStatus === "error") {
-        console.error("[avatars] Статус 'error' при создании записи");
         return false;
       }
 
@@ -192,8 +189,6 @@ export function AvatarUploadModal({
       const pollDelayMs = 2000;
       const deadline = Date.now() + timeoutMs;
       let attemptCount = 0;
-
-      console.log(`[avatars] Начинаем проверку статуса для записи ${recordId}`);
 
       while (isMountedRef.current && Date.now() < deadline) {
         attemptCount++;
@@ -204,37 +199,20 @@ export function AvatarUploadModal({
           .single();
 
         if (error) {
-          console.error(
-            `[avatars] Ошибка проверки статуса (попытка ${attemptCount}):`,
-            error
-          );
           // Если запись не найдена, продолжаем попытки
           if (error.code === "PGRST116") {
             await sleep(pollDelayMs);
             continue;
           }
         } else if (data?.status === "done") {
-          console.log(
-            `[avatars] Статус 'done' получен после ${attemptCount} попыток`
-          );
           return true;
         } else if (data?.status === "error") {
-          console.error(
-            `[avatars] Статус 'error' получен после ${attemptCount} попыток`
-          );
           return false;
-        } else {
-          console.log(
-            `[avatars] Попытка ${attemptCount}: статус = ${data?.status || "неизвестен"}`
-          );
         }
 
         await sleep(pollDelayMs);
       }
 
-      console.warn(
-        `[avatars] Таймаут ожидания статуса после ${attemptCount} попыток`
-      );
       return false;
     },
     []
@@ -278,7 +256,7 @@ export function AvatarUploadModal({
         }
       }
     } catch (error) {
-      console.error("[AvatarUploadModal] Ошибка проверки лимита:", error);
+      // Игнорируем ошибки проверки лимита
     }
 
     setIsUploading(true);
@@ -312,9 +290,6 @@ export function AvatarUploadModal({
 
       // Проверяем статус сразу после создания
       const initialStatus = result.avatar.status;
-      console.log(
-        `[avatars] Аватар создан с ID ${result.avatar.id}, начальный статус: ${initialStatus}`
-      );
 
       // Если статус уже done, сразу устанавливаем прогресс в 100%
       if (initialStatus === "done") {
@@ -343,7 +318,6 @@ export function AvatarUploadModal({
       await sleep(400);
       closeModal();
     } catch (error) {
-      console.error("[avatars] Ошибка при загрузке:", error);
       alert(
         `Ошибка при загрузке: ${
           error instanceof Error ? error.message : "Неизвестная ошибка"

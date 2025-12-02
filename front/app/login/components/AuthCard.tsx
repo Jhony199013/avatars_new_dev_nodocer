@@ -334,17 +334,11 @@ export function AuthCard() {
               });
 
               if (!response.ok) {
-                const data = await response.json().catch(() => null);
-                console.error(
-                  "[AuthCard] Ошибка сохранения метаданных через API:",
-                  data?.error || response.statusText,
-                );
+                // Игнорируем ошибки сохранения метаданных
               }
-            } else {
-              console.warn("[AuthCard] Не все данные заполнены для сохранения метаданных");
             }
           } catch (metadataError) {
-            console.error("[AuthCard] Ошибка запроса к /api/metadata:", metadataError);
+            // Игнорируем ошибки сохранения метаданных
           }
 
           // Отправляем вебхук с UUID пользователя после успешной регистрации
@@ -357,8 +351,7 @@ export function AuthCard() {
               body: JSON.stringify({ uuid: signUpData.user.id }),
             });
           } catch (webhookError) {
-            // Логируем ошибку вебхука, но не прерываем процесс регистрации
-            console.error("[AuthCard] Ошибка отправки вебхука регистрации:", webhookError);
+            // Игнорируем ошибки вебхука, но не прерываем процесс регистрации
           }
         }
         

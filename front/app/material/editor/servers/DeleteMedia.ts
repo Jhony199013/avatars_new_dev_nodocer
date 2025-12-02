@@ -57,10 +57,11 @@ export async function DeleteMedia(s3Key: string): Promise<DeleteMediaResult> {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Неизвестная ошибка при удалении файла";
-    console.error("[DeleteMedia] Ошибка удаления медиа:", message);
     return { success: false, error: message };
   }
 }
+
+
 
 
 

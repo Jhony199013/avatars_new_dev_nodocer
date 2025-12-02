@@ -68,7 +68,7 @@ export function VoiceCreateModal({
       animationFrameRef.current = null;
     }
     if (audioContextRef.current && audioContextRef.current.state !== "closed") {
-      audioContextRef.current.close().catch(console.error);
+      audioContextRef.current.close().catch(() => {});
     }
     setAudioLevel(0);
   }, []);
@@ -109,7 +109,7 @@ export function VoiceCreateModal({
       
       updateAudioLevel();
     } catch (error) {
-      console.error("Ошибка анализа аудио:", error);
+      // Игнорируем ошибки анализа аудио
     }
   }, []);
 
@@ -256,7 +256,6 @@ export function VoiceCreateModal({
       // Запускаем анализ аудио для индикатора громкости
       startAudioAnalysis(stream);
     } catch (error: unknown) {
-      console.error("Ошибка доступа к микрофону:", error);
       setIsTestingMicrophone(false);
       
       let errorMessage = "Не удалось получить доступ к микрофону.";
@@ -328,7 +327,6 @@ export function VoiceCreateModal({
         }
       } catch (permError) {
         // Некоторые браузеры не поддерживают permissions API, продолжаем
-        console.log("Permissions API не поддерживается, продолжаем запрос");
       }
 
       // Всегда создаем новый поток для записи, чтобы избежать конфликтов
@@ -387,7 +385,6 @@ export function VoiceCreateModal({
       };
 
       mediaRecorder.onerror = (event) => {
-        console.error("Ошибка записи:", event);
         setIsRecording(false);
         stopAudioAnalysis();
         stream.getTracks().forEach(track => track.stop());
@@ -412,7 +409,6 @@ export function VoiceCreateModal({
         });
       }, 1000);
     } catch (error: unknown) {
-      console.error("Ошибка доступа к микрофону:", error);
       setIsRecording(false);
       
       let errorMessage = "Не удалось получить доступ к микрофону.";
@@ -524,7 +520,6 @@ export function VoiceCreateModal({
       return new File([mp3Blob], "recording.mp3", { type: "audio/mpeg" });
     } catch (error) {
       // Fallback: если lamejs не загрузился, конвертируем в WAV
-      console.warn("Не удалось использовать lamejs, используем WAV формат:", error);
       const wavBlob = audioBufferToWav(audioBuffer);
       // Отправляем как WAV с расширением mp3 (сервер может конвертировать)
       return new File([wavBlob], "recording.mp3", { type: "audio/mpeg" });
@@ -616,7 +611,7 @@ export function VoiceCreateModal({
         }
       }
     } catch (error) {
-      console.error("[VoiceCreateModal] Ошибка проверки лимита:", error);
+      // Игнорируем ошибки проверки лимита
     }
 
     // Запускаем прогресс-бар сразу при нажатии на кнопку
@@ -634,7 +629,6 @@ export function VoiceCreateModal({
       try {
         audioFile = await convertWebmToMp3(recordedBlob);
       } catch (error) {
-        console.error("[voices] Ошибка конвертации:", error);
         stopProgressLoop();
         setIsUploading(false);
         setIsWaiting(false);
@@ -701,8 +695,7 @@ export function VoiceCreateModal({
           body: JSON.stringify({ uuid: user.id }),
         });
       } catch (webhookError) {
-        // Логируем ошибку вебхука, но не прерываем процесс клонирования
-        console.error("[VoiceCreateModal] Ошибка отправки вебхука UUID:", webhookError);
+        // Игнорируем ошибки вебхука, но не прерываем процесс клонирования
       }
 
       // Продолжаем ждать появления записи в таблице (прогресс-бар уже запущен)
@@ -744,7 +737,6 @@ export function VoiceCreateModal({
       await onVoiceCreated?.();
       closeModal();
     } catch (error) {
-      console.error("[voices] Ошибка клонирования голоса:", error);
       stopProgressLoop();
       setIsUploading(false);
       setIsWaiting(false);

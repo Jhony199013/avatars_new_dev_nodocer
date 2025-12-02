@@ -66,9 +66,7 @@ export function AvatarsSection() {
 
       if (!isMounted) return;
 
-      if (error) {
-        console.error("[avatars] Ошибка загрузки аватаров:", error);
-      } else {
+      if (!error) {
         setPhotoAvatars(data ?? []);
       }
       setIsFetchingAvatars(false);
@@ -92,9 +90,7 @@ export function AvatarsSection() {
       .eq("uid", currentUserId)
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("[avatars] Ошибка загрузки аватаров:", error);
-    } else {
+    if (!error) {
       setPhotoAvatars(data ?? []);
     }
   }, [currentUserId]);

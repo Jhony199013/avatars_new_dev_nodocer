@@ -68,7 +68,6 @@ export async function UpdateVideoTitle({
       .eq("uid", uid.trim());
 
     if (error) {
-      console.error("[UpdateVideoTitle] Ошибка обновления названия видео:", error);
       return { success: false, error: error.message };
     }
 
@@ -76,10 +75,11 @@ export async function UpdateVideoTitle({
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Неизвестная ошибка сервера";
-    console.error("[UpdateVideoTitle]", message);
     return { success: false, error: message };
   }
 }
+
+
 
 
 

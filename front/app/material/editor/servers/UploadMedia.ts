@@ -110,7 +110,6 @@ export async function UploadMedia(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Неизвестная ошибка при загрузке файла";
-    console.error("[UploadMedia] Ошибка загрузки медиа:", message);
     return { success: false, error: message };
   }
 }

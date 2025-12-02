@@ -82,7 +82,6 @@ export async function SaveUserMetadata(
       });
 
     if (error) {
-      console.error("[SaveUserMetadata] Ошибка при сохранении метаданных:", error);
       return { 
         success: false, 
         error: error.message || "Ошибка при сохранении данных в базу данных" 
@@ -93,7 +92,6 @@ export async function SaveUserMetadata(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Неизвестная ошибка сервера";
-    console.error("[SaveUserMetadata] Критическая ошибка:", message, error);
     return { success: false, error: message };
   }
 }

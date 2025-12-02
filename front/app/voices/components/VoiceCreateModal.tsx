@@ -29,6 +29,9 @@ export function VoiceCreateModal({
   const [isWaiting, setIsWaiting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [activeTab, setActiveTab] = useState<"upload" | "record">("upload"); // Вкладка: загрузка или запись
   const [audioLevel, setAudioLevel] = useState(0); // Уровень громкости (0-100)
   const [isTestingMicrophone, setIsTestingMicrophone] = useState(false); // Тест микрофона до записи
   const [recordingTimer, setRecordingTimer] = useState(120); // Таймер записи в секундах (2 минуты)
@@ -136,6 +139,9 @@ export function VoiceCreateModal({
     setIsTestingMicrophone(false);
     setProgress(0);
     setRecordingTimer(120);
+    setShowConsentModal(false);
+    setConsentChecked(false);
+    setActiveTab("upload");
     stopProgressLoop();
     stopTimer();
     stopAudioAnalysis();
@@ -287,19 +293,19 @@ export function VoiceCreateModal({
     }
   }, [stopAudioAnalysis]);
 
-  // Автоматически запускаем тест микрофона при открытии модального окна
+  // Автоматически запускаем тест микрофона при открытии модального окна или переключении на вкладку записи
   useEffect(() => {
-    if (isOpen && !isRecording && !isTestingMicrophone && !streamRef.current) {
+    if (isOpen && activeTab === "record" && !isRecording && !isTestingMicrophone && !streamRef.current) {
       startMicrophoneTest();
     }
     
     return () => {
-      // Останавливаем тест при закрытии модального окна (если не идет запись)
-      if (!isOpen && !isRecording && isTestingMicrophone) {
+      // Останавливаем тест при закрытии модального окна или переключении на другую вкладку (если не идет запись)
+      if ((!isOpen || activeTab !== "record") && !isRecording && isTestingMicrophone) {
         stopMicrophoneTest();
       }
     };
-  }, [isOpen, isRecording, isTestingMicrophone, startMicrophoneTest, stopMicrophoneTest]);
+  }, [isOpen, activeTab, isRecording, isTestingMicrophone, startMicrophoneTest, stopMicrophoneTest]);
 
   const startRecording = async () => {
     try {
@@ -566,6 +572,26 @@ export function VoiceCreateModal({
     return new Blob([arrayBuffer], { type: "audio/wav" });
   };
 
+  const handleCloneClick = () => {
+    if (!voiceName.trim()) {
+      showError("Введите название голоса");
+      return;
+    }
+    if (!selectedFile && !recordedBlob) {
+      showError("Загрузите файл или запишите голос с микрофона");
+      return;
+    }
+    setShowConsentModal(true);
+  };
+
+  const handleConsentConfirm = () => {
+    if (!consentChecked) {
+      return;
+    }
+    setShowConsentModal(false);
+    handleCloneVoice();
+  };
+
   const handleCloneVoice = async () => {
     if (!voiceName.trim()) {
       showError("Введите название голоса");
@@ -808,148 +834,211 @@ export function VoiceCreateModal({
               />
             </div>
 
-            {/* Загрузка файла */}
-            <div
-              className={dropZoneClasses}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-            >
-              <div className="mx-auto flex max-w-sm flex-col items-center gap-3 text-gray-700">
-                <div className="rounded-2xl border border-purple-200 bg-white p-3 text-purple-500">
-                  ↑
-                </div>
-                <p className="text-base font-semibold">
-                  Перетащите аудио файл сюда
-                </p>
-                <p className="text-xs text-gray-500">MP3, WAV до 11 МБ</p>
-                <button
-                  type="button"
-                  className="rounded-lg bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:opacity-50"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading || isRecording}
-                >
-                  Выбрать файл
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="audio/*"
-                  className="hidden"
-                  onChange={handleFileSelect}
-                  disabled={isUploading || isRecording}
-                />
-              </div>
+            {/* Вкладки для переключения между загрузкой и записью */}
+            <div className="flex gap-2 rounded-lg border border-gray-200 bg-gray-50 p-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("upload");
+                  // Останавливаем запись и тест микрофона при переключении на загрузку
+                  if (isRecording) {
+                    stopRecording();
+                  }
+                  if (isTestingMicrophone) {
+                    stopMicrophoneTest();
+                  }
+                }}
+                disabled={isUploading || isWaiting}
+                className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                  activeTab === "upload"
+                    ? "bg-white text-purple-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                } disabled:opacity-50`}
+              >
+                Загрузить аудиофайл
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("record");
+                  // Очищаем выбранный файл при переключении на запись
+                  if (selectedFile) {
+                    setSelectedFile(null);
+                  }
+                }}
+                disabled={isUploading || isWaiting}
+                className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                  activeTab === "record"
+                    ? "bg-white text-purple-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                } disabled:opacity-50`}
+              >
+                Записать голос
+              </button>
             </div>
 
-            {/* Выбранный файл */}
-            {selectedFile && (
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-purple-100 p-2 text-purple-600">
-                      🎵
+            {/* Контент для загрузки файла */}
+            {activeTab === "upload" && (
+              <>
+                <div
+                  className={dropZoneClasses}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                >
+                  <div className="mx-auto flex max-w-sm flex-col items-center gap-3 text-gray-700">
+                    <div className="rounded-2xl border border-purple-200 bg-white p-3 text-purple-500">
+                      ↑
                     </div>
-                    <div>
-                      <div className="font-medium">{selectedFile.name}</div>
-                      <div className="text-xs text-gray-500">
-                        {(selectedFile.size / 1024 / 1024).toFixed(2)} МБ
+                    <p className="text-base font-semibold">
+                      Перетащите аудио файл сюда
+                    </p>
+                    <p className="text-xs text-gray-500">MP3, WAV до 11 МБ</p>
+                    <button
+                      type="button"
+                      className="rounded-lg bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:opacity-50"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading || isRecording}
+                    >
+                      Выбрать файл
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="audio/*"
+                      className="hidden"
+                      onChange={handleFileSelect}
+                      disabled={isUploading || isRecording}
+                    />
+                  </div>
+                </div>
+
+                {/* Выбранный файл */}
+                {selectedFile && (
+                  <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-purple-100 p-2 text-purple-600">
+                          🎵
+                        </div>
+                        <div>
+                          <div className="font-medium">{selectedFile.name}</div>
+                          <div className="text-xs text-gray-500">
+                            {(selectedFile.size / 1024 / 1024).toFixed(2)} МБ
+                          </div>
+                        </div>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedFile(null)}
+                        className="text-gray-400 transition hover:text-red-500"
+                        disabled={isUploading || isRecording}
+                      >
+                        ✕
+                      </button>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedFile(null)}
-                    className="text-gray-400 transition hover:text-red-500"
-                    disabled={isUploading || isRecording}
-                  >
-                    ✕
-                  </button>
+                )}
+
+                {/* Требования к аудиофайлу */}
+                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-xs text-gray-600">
+                  <p className="mb-2 text-sm font-semibold text-gray-800">
+                    Требования к аудиофайлу
+                  </p>
+                  <p className="text-gray-700">
+                    Аудиофайл должен содержать запись голоса без посторонних звуков в хорошем качестве.
+                  </p>
                 </div>
-              </div>
+              </>
             )}
 
-            {/* Разделитель */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-gray-500">или</span>
-              </div>
-            </div>
-
-            {/* Запись с микрофона */}
-            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center">
-              <div className="mx-auto flex max-w-sm flex-col items-center gap-4">
-                <div className="rounded-full border-4 border-purple-200 bg-white p-4">
-                  {isRecording ? (
-                    <div className="h-12 w-12 animate-pulse rounded-full bg-red-500"></div>
-                  ) : (
-                    <div className="h-12 w-12 rounded-full bg-purple-500"></div>
-                  )}
-                </div>
-                <div>
-                  <p className="text-base font-semibold text-gray-900">
-                    {isRecording ? "Идет запись..." : "Записать с микрофона"}
-                  </p>
-                  <p className="mt-1 text-xs text-gray-500">
-                    {isRecording
-                      ? "Нажмите остановить для завершения записи"
-                      : "Прочитайте отрывок любого текста в естественной форме (не менее 2 минут)"}
-                  </p>
-                </div>
-                
-                {/* Индикатор громкости - показываем всегда когда тестируем или записываем */}
-                {(isTestingMicrophone || isRecording) && (
-                  <div className="w-full space-y-1.5">
-                    <p className="text-xs font-medium text-gray-600">
-                      Тест микрофона
-                    </p>
-                    <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
-                      <div
-                        className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-transparent via-purple-500/50 to-purple-600 transition-all duration-75 ease-out"
-                        style={{ width: `${Math.max(2, audioLevel)}%` }}
-                      />
+            {/* Контент для записи с микрофона */}
+            {activeTab === "record" && (
+              <>
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center">
+                  <div className="mx-auto flex max-w-sm flex-col items-center gap-4">
+                    <div className="rounded-full border-4 border-purple-200 bg-white p-4">
+                      {isRecording ? (
+                        <div className="h-12 w-12 animate-pulse rounded-full bg-red-500"></div>
+                      ) : (
+                        <div className="h-12 w-12 rounded-full bg-purple-500"></div>
+                      )}
                     </div>
-                  </div>
-                )}
-                
-                {/* Таймер обратного отсчета во время записи */}
-                {isRecording && (
-                  <div className="w-full">
-                    <div className="rounded-lg bg-purple-50 px-4 py-2">
-                      <p className="text-sm font-semibold text-purple-700">
-                        Осталось времени: {Math.floor(recordingTimer / 60)}:{(recordingTimer % 60).toString().padStart(2, '0')}
+                    <div>
+                      <p className="text-base font-semibold text-gray-900">
+                        {isRecording ? "Идет запись..." : "Записать с микрофона"}
                       </p>
+                      {isRecording && (
+                        <p className="mt-1 text-xs text-gray-500">
+                          Нажмите остановить для завершения записи
+                        </p>
+                      )}
                     </div>
+                    
+                    {/* Индикатор громкости - показываем всегда когда тестируем или записываем */}
+                    {(isTestingMicrophone || isRecording) && (
+                      <div className="w-full space-y-1.5">
+                        <p className="text-xs font-medium text-gray-600">
+                          Тест микрофона
+                        </p>
+                        <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+                          <div
+                            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-transparent via-purple-500/50 to-purple-600 transition-all duration-75 ease-out"
+                            style={{ width: `${Math.max(2, audioLevel)}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Таймер обратного отсчета во время записи */}
+                    {isRecording && (
+                      <div className="w-full">
+                        <div className="rounded-lg bg-purple-50 px-4 py-2">
+                          <p className="text-sm font-semibold text-purple-700">
+                            Осталось времени: {Math.floor(recordingTimer / 60)}:{(recordingTimer % 60).toString().padStart(2, '0')}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {!isRecording ? (
+                      <button
+                        type="button"
+                        onClick={startRecording}
+                        className="rounded-lg bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:opacity-50"
+                        disabled={isUploading || isWaiting}
+                      >
+                        Начать запись
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={stopRecording}
+                        className="rounded-lg bg-red-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-red-500"
+                      >
+                        Остановить запись
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Требования к записи */}
+                {!isRecording && (
+                  <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-xs text-gray-600">
+                    <p className="mb-2 text-sm font-semibold text-gray-800">
+                      Требования к записи
+                    </p>
+                    <p className="text-gray-700">
+                      Прочитайте отрывок любого текста в естественной форме <span className="font-semibold">(не менее 2 минут)</span>. На фоне не должно быть посторонних звуков.
+                    </p>
                   </div>
                 )}
-                
-                {!isRecording ? (
-                  <button
-                    type="button"
-                    onClick={startRecording}
-                    className="rounded-lg bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:opacity-50"
-                    disabled={isUploading || !!selectedFile}
-                  >
-                    Начать запись
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={stopRecording}
-                    className="rounded-lg bg-red-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-red-500"
-                  >
-                    Остановить запись
-                  </button>
-                )}
-              </div>
-            </div>
+              </>
+            )}
 
-            {/* Записанный файл */}
-            {recordedBlob && !isRecording && recordedAudioUrl && (
+            {/* Записанный файл - показываем только на вкладке записи */}
+            {activeTab === "record" && recordedBlob && !isRecording && recordedAudioUrl && (
               <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-3">
@@ -1017,7 +1106,7 @@ export function VoiceCreateModal({
           </div>
           <button
             type="button"
-            onClick={handleCloneVoice}
+            onClick={handleCloneClick}
             disabled={
               isUploading ||
               isRecording ||
@@ -1077,6 +1166,104 @@ export function VoiceCreateModal({
                 className="rounded-lg border border-purple-600 bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-700"
               >
                 OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно согласия для загрузки аудио */}
+      {showConsentModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4 py-8">
+          <div className="w-full max-w-lg rounded-[32px] bg-white shadow-2xl">
+            <div className="relative flex items-center justify-center border-b px-6 py-4">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Подтверждение загрузки аудиозаписи
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowConsentModal(false)}
+                className="absolute right-6 rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+              >
+                <span className="sr-only">Закрыть</span>✕
+              </button>
+            </div>
+
+            <div className="max-h-[60vh] overflow-y-auto px-6 py-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full">
+              <div className="space-y-4 text-sm text-gray-700">
+                <p className="font-semibold text-gray-900">
+                  Продолжая загрузку аудиозаписи, я подтверждаю:
+                </p>
+                <ul className="space-y-3 pl-4">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>Голос, который я загружаю — принадлежит лично мне.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>
+                      Я не использую голос других людей без их прямого и документального согласия.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>
+                      Я понимаю, что технология создаёт цифровую копию моего голоса, которая может использоваться для генерации речи.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>
+                      Я разрешаю обработку моего голоса исключительно для целей, связанных с функционалом сервиса.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>
+                      Я беру на себя полную ответственность за содержание и использование созданного голосового клона.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>
+                      Сервис работает в тестовом режиме, функциональность может быть ограничена или изменена, а результат может содержать неточности.
+                    </span>
+                  </li>
+                </ul>
+
+                <div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                  <input
+                    type="checkbox"
+                    id="voice-consent"
+                    checked={consentChecked}
+                    onChange={(e) => setConsentChecked(e.target.checked)}
+                    className="mt-0.5 h-5 w-5 cursor-pointer rounded border-gray-300 text-purple-600 focus:ring-2 focus:ring-purple-500"
+                  />
+                  <label
+                    htmlFor="voice-consent"
+                    className="cursor-pointer text-sm text-gray-700"
+                  >
+                    Я прочитал и согласен с условиями загрузки аудиозаписи
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 border-t border-gray-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-end sm:gap-4">
+              <button
+                type="button"
+                onClick={() => setShowConsentModal(false)}
+                className="rounded-lg border border-gray-200 px-5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                onClick={handleConsentConfirm}
+                disabled={!consentChecked}
+                className="rounded-lg bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:bg-gray-300"
+              >
+                Продолжить загрузку
               </button>
             </div>
           </div>

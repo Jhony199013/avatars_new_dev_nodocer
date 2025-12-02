@@ -29,15 +29,10 @@ function isLoginRoute(pathname) {
     return pathname === LOGIN_ROUTE;
 }
 function isAuthenticated(request) {
-    const cookies = request.cookies.getAll();
-    // Проверяем наличие Supabase токена (обычно это cookie с именем содержащим "auth-token")
-    const supabaseTokenCookie = cookies.find((cookie)=>cookie.name.includes("auth-token"));
-    const hasSupabaseToken = Boolean(supabaseTokenCookie?.value && supabaseTokenCookie.value.trim() !== "");
-    // Проверяем наличие кастомной auth cookie
-    const customAuthCookie = cookies.find((cookie)=>cookie.name === AUTH_COOKIE_NAME);
-    const hasCustomAuthCookie = Boolean(customAuthCookie?.value && customAuthCookie.value.trim() !== "");
-    // Пользователь авторизован только если есть хотя бы один валидный токен
-    return hasSupabaseToken || hasCustomAuthCookie;
+    // Проверяем только нашу кастомную auth cookie
+    // Это единственный надежный индикатор авторизации, который мы контролируем
+    const customAuthCookie = request.cookies.get(AUTH_COOKIE_NAME);
+    return Boolean(customAuthCookie?.value && customAuthCookie.value.trim() !== "");
 }
 async function middleware(request) {
     const { pathname } = request.nextUrl;

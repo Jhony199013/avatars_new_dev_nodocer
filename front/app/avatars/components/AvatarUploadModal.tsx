@@ -27,6 +27,8 @@ export function AvatarUploadModal({
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
     null
@@ -71,6 +73,8 @@ export function AvatarUploadModal({
     previewUrls.forEach((url) => URL.revokeObjectURL(url));
     setPreviewUrls([]);
     setProgress(0);
+    setShowConsentModal(false);
+    setConsentChecked(false);
     stopProgressLoop();
   }, [previewUrls, stopProgressLoop]);
 
@@ -235,6 +239,21 @@ export function AvatarUploadModal({
     },
     []
   );
+
+  const handleCreateClick = () => {
+    if (isUploading || !avatarName.trim() || selectedFiles.length === 0) {
+      return;
+    }
+    setShowConsentModal(true);
+  };
+
+  const handleConsentConfirm = () => {
+    if (!consentChecked) {
+      return;
+    }
+    setShowConsentModal(false);
+    handleUpload();
+  };
 
   const handleUpload = async () => {
     if (isUploading || !avatarName.trim() || selectedFiles.length === 0) {
@@ -449,16 +468,105 @@ export function AvatarUploadModal({
             )}
 
             <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-xs text-gray-600">
-              <p className="mb-3 text-sm font-semibold text-gray-800">
+              <p className="mb-4 text-sm font-semibold text-gray-800">
                 Требования к фото
               </p>
-              <ul className="space-y-2">
-                <li>Фото в анфас (лицо прямо в камеру)</li>
-                <li>Хорошее качество изображения, чёткое и резкое</li>
-                <li>Без теней на лице, равномерное освещение</li>
-                <li>Без других людей на фото, только вы</li>
-                <li>Без открытой улыбки, нейтральное выражение лица</li>
-              </ul>
+              
+              {/* Примеры правильных и неправильных фото */}
+              <div className="mb-4 grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Image
+                    src="/yes.png"
+                    alt="Правильный пример"
+                    width={120}
+                    height={120}
+                    className="h-auto w-full rounded-lg border-2 border-green-500 object-cover"
+                    unoptimized
+                  />
+                  <p className="text-center text-xs font-medium text-gray-700">Хорошо</p>
+                </div>
+                <div className="space-y-2">
+                  <Image
+                    src="/no.png"
+                    alt="Неправильный пример"
+                    width={120}
+                    height={120}
+                    className="h-auto w-full rounded-lg border-2 border-red-500 object-cover"
+                    unoptimized
+                  />
+                  <p className="text-center text-xs font-medium text-gray-700">Плохо</p>
+                </div>
+              </div>
+
+              {/* Правильные требования */}
+              <div className="mb-4 space-y-2">
+                <p className="text-xs font-semibold text-gray-800">✓ Что нужно:</p>
+                <ul className="space-y-1.5 pl-3">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600">•</span>
+                    <span>Фото в анфас - лицо смотрит прямо в камеру.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600">•</span>
+                    <span>Высокое качество - изображение чёткое, резкое, без размытия.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600">•</span>
+                    <span>Равномерное освещение - без глубоких теней, лицо освещено полностью.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600">•</span>
+                    <span>Только вы в кадре - без других людей, предметов или животных.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600">•</span>
+                    <span>Нейтральное выражение лица - без открытой улыбки, без эмоциональных гримас.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600">•</span>
+                    <span>Без сильной обработки - без фильтров, ретуши, масок и эффектов.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600">•</span>
+                    <span>Волосы не закрывают лицо - глаза, нос, рот должны быть хорошо видны.</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Неправильные требования */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-gray-800">✗ Чего избегать:</p>
+                <ul className="space-y-1.5 pl-3">
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600">•</span>
+                    <span>Не в анфас - фото сбоку, полуоборот, сверху, снизу.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600">•</span>
+                    <span>Размытые, тёмные или низкого качества снимки.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600">•</span>
+                    <span>Фото с яркими тенями, подсветкой только с одной стороны.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600">•</span>
+                    <span>В кадре есть другие люди или посторонние лица - даже частично.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600">•</span>
+                    <span>Сильная эмоция или открытая улыбка, язык наружу, гримаса и т.п.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600">•</span>
+                    <span>Фото с фильтрами, масками, эффектами.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600">•</span>
+                    <span>Закрытое лицо: солнцезащитные очки, медицинская маска, волосы закрывают половину лица, руки закрывают лицо.</span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -485,7 +593,7 @@ export function AvatarUploadModal({
           </div>
           <button
             type="button"
-            onClick={handleUpload}
+            onClick={handleCreateClick}
             disabled={
               isUploading || !avatarName.trim() || selectedFiles.length === 0
             }
@@ -495,6 +603,104 @@ export function AvatarUploadModal({
           </button>
         </div>
       </div>
+
+      {/* Модальное окно согласия для загрузки фото */}
+      {showConsentModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4 py-8">
+          <div className="w-full max-w-lg rounded-[32px] bg-white shadow-2xl">
+            <div className="relative flex items-center justify-center border-b px-6 py-4">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Подтверждение загрузки фотографии
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowConsentModal(false)}
+                className="absolute right-6 rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+              >
+                <span className="sr-only">Закрыть</span>✕
+              </button>
+            </div>
+
+            <div className="max-h-[60vh] overflow-y-auto px-6 py-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full">
+              <div className="space-y-4 text-sm text-gray-700">
+                <p className="font-semibold text-gray-900">
+                  Продолжая загрузку фотографии, я подтверждаю:
+                </p>
+                <ul className="space-y-3 pl-4">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>Лицо на фото принадлежит лично мне.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>
+                      Я не загружаю изображения других людей, знаменитостей, публичных персон или любых третьих лиц без их явного согласия.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>
+                      Я понимаю, что сервис будет создавать анимированную цифровую модель моего лица.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>
+                      Я даю согласие на обработку изображения исключительно в рамках функционала сервиса.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>
+                      Я беру на себя ответственность за дальнейшее использование созданных аватаров и материалов.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>
+                      Сервис работает в тестовом режиме, результаты могут быть нестабильными, а функциональность — меняться.
+                    </span>
+                  </li>
+                </ul>
+
+                <div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                  <input
+                    type="checkbox"
+                    id="avatar-consent"
+                    checked={consentChecked}
+                    onChange={(e) => setConsentChecked(e.target.checked)}
+                    className="mt-0.5 h-5 w-5 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                  />
+                  <label
+                    htmlFor="avatar-consent"
+                    className="cursor-pointer text-sm text-gray-700"
+                  >
+                    Я прочитал и согласен с условиями загрузки фотографии
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 border-t border-gray-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-end sm:gap-4">
+              <button
+                type="button"
+                onClick={() => setShowConsentModal(false)}
+                className="rounded-lg border border-gray-200 px-5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                onClick={handleConsentConfirm}
+                disabled={!consentChecked}
+                className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-gray-300"
+              >
+                Продолжить загрузку
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

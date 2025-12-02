@@ -31,6 +31,10 @@ export default function Home() {
         if (!isMounted) return;
 
         if (error || !user) {
+          // Очищаем куку авторизации перед редиректом на логин
+          if (typeof document !== "undefined") {
+            document.cookie = "app-auth=; path=/; max-age=0";
+          }
           router.push("/login");
           return;
         }
@@ -45,6 +49,10 @@ export default function Home() {
         
         console.error("[Home] Ошибка проверки авторизации:", error);
         if (isMounted) {
+          // Очищаем куку авторизации перед редиректом на логин
+          if (typeof document !== "undefined") {
+            document.cookie = "app-auth=; path=/; max-age=0";
+          }
           router.push("/login");
         }
       } finally {

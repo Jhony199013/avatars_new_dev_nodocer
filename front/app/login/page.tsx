@@ -14,6 +14,10 @@ export default function LoginPage() {
     const checkAuth = async () => {
       const { user } = await safeGetUser();
       if (user) {
+        // Если пользователь найден, устанавливаем куку авторизации перед редиректом
+        if (typeof document !== "undefined") {
+          document.cookie = "app-auth=1; path=/; max-age=604800";
+        }
         router.push("/");
       }
     };

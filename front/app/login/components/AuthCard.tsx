@@ -379,6 +379,14 @@ export function AuthCard() {
           {mode === "login" ? "Вход в сервис" : "Регистрация"}
         </h1>
 
+        {mode === "register" && (
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
+            <p className="text-sm font-medium text-amber-800">
+              Регистрация временно недоступна
+            </p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {mode === "register" && (
             <>
@@ -631,7 +639,7 @@ export function AuthCard() {
 
           <button
             type="submit"
-            disabled={!canSubmit}
+            disabled={mode === "register" || !canSubmit}
             className="w-full rounded-xl bg-black px-4 py-3 font-semibold text-white transition hover:bg-black/90 disabled:cursor-not-allowed disabled:opacity-40"
           >
           {loading

@@ -605,8 +605,8 @@ export function VoiceCreateModal({
           .select("id")
           .eq("uid", user.id);
 
-        if (voicesData && voicesData.length >= 3) {
-          showError("В демо-режиме можно создать максимум 3 голоса");
+        if (voicesData && voicesData.length >= 2) {
+          showError("В демо-режиме можно создать максимум 2 голоса");
           return;
         }
       }

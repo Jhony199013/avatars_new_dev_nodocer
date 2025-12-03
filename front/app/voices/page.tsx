@@ -62,7 +62,7 @@ export default function VoicesPage() {
     fetchVoices();
   }, [fetchVoices]);
 
-  const hasReachedLimit = voices.length >= 3;
+  const hasReachedLimit = voices.length >= 2;
 
   return (
     <div className="min-h-screen bg-white">
@@ -78,7 +78,7 @@ export default function VoicesPage() {
           }}
           disabled={hasReachedLimit}
           className="min-w-[170px] rounded-lg bg-purple-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-purple-600"
-          title={hasReachedLimit ? "Максимальное количество голосов (3) достигнуто" : "Создать голос"}
+          title={hasReachedLimit ? "Максимальное количество голосов (2) достигнуто" : "Создать голос"}
         >
           Создать голос
         </button>
@@ -105,7 +105,7 @@ export default function VoicesPage() {
                 Демо-режим
               </p>
               <p className="mt-1 text-xs text-amber-700">
-                В демо-режиме можно создать максимум 3 голоса
+                В демо-режиме можно создать максимум 2 голоса
               </p>
             </div>
           </div>

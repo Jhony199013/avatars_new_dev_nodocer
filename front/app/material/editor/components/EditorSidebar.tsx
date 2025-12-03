@@ -761,8 +761,8 @@ export function EditorSidebar({
                   type="button"
                   onClick={async () => {
                     // Проверка лимита в демо-режиме
-                    if (voices.length >= 3) {
-                      alert("В демо-режиме можно создать максимум 3 голоса");
+                    if (voices.length >= 2) {
+                      alert("В демо-режиме можно создать максимум 2 голоса");
                       return;
                     }
                     if (openVoiceModalForSceneId) {
@@ -771,9 +771,9 @@ export function EditorSidebar({
                     setOpenVoiceModalForSceneId(null);
                     setIsVoiceCreateModalOpen(true);
                   }}
-                  disabled={voices.length >= 3}
+                  disabled={voices.length >= 2}
                   className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-purple-600"
-                  title={voices.length >= 3 ? "Максимальное количество голосов (3) достигнуто" : "Создать голос"}
+                  title={voices.length >= 2 ? "Максимальное количество голосов (2) достигнуто" : "Создать голос"}
                 >
                   Создать голос
                 </button>

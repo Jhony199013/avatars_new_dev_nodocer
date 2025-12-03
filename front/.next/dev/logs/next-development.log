@@ -92,3 +92,7 @@
 [00:12:09.366] Server  LOG      ✓ Compiled in 44ms
 [00:12:10.773] Server  LOG      ✓ Compiled in 45ms
 [00:13:01.941] Server  LOG      ✓ Compiled in 66ms
+[03:26:21.368] Server  LOG      ✓ Compiled in 100ms
+[03:36:07.949] Server  LOG      ✓ Compiled in 770ms
+[03:36:08.668] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[03:36:15.044] Server  LOG      ✓ Compiled in 321ms
